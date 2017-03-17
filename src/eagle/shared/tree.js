@@ -420,16 +420,6 @@ export function setupNewBlockInInitBranch(_depth, transient, list) {
 
 	if (list.depth === (_depth - 1)) {
 		list.depth = _depth;
-		// if (_depth == 2) {
-		// 	// console.warn('d2: ', JSON.stringify(list.display0))
-		// 	list.display1 = [null, list.display0, [0, list.display0.length]]
-		// } else {
-		// 	list['display' + (_depth - 1)] = [
-		// 		null,
-		// 		list['display' + (_depth - 2)],
-		// 		[0, treeSize(list['display' + (_depth - 2)], _depth - 1)]]
-		// 	// list['display' + (_depth - 1)] = makeNewRoot1(list['display' + (_depth - 2)], _depth)
-		// }
 		var delta = _depth == 2 ? list.display0.length : treeSize(list['display' + (_depth - 2)], _depth - 1);
 		list['display' + (_depth - 1)] = [null, list['display' + (_depth - 2)], [0, delta]]
 	} else {
@@ -437,11 +427,7 @@ export function setupNewBlockInInitBranch(_depth, transient, list) {
 		var newRoot = copyAndIncLeftRoot(list['display' + (_depth - 1)], list.transient, _depth - 1)
 
 		if (list.transient) {
-			console.log('PreWithRecom', _depth, newRoot.length, JSON.stringify(newRoot.slice(0, 1)));
-			// newRoot[0] is always null here
-			// but why is newRoot[1] supposedly null?
 			withRecomputeSizes(newRoot, _depth, 1)
-			console.log('not made it')
 			newRoot[1] = list['display' + (_depth - 2)]
 		}
 		list['display' + (_depth - 1)] = newRoot
@@ -546,8 +532,6 @@ export function copyAndIncRightRoot(node, transient, currentLevel) {
 }
 
 function copyAndIncLeftRoot(node, transient, currentLevel) {
-	// throw new Error("incleft node", JSON.stringify(node))
-	console.warn('incleft')
 	var len = node.length
 	var newRoot = new Array(len + 1)
 	arraycopy(node, 0, newRoot, 1, len - 1)
@@ -571,8 +555,7 @@ function copyAndIncLeftRoot(node, transient, currentLevel) {
 		}
 		newSizes[i] = acc + treeSize(node[node.length - 2], currentLevel)
 	}
-	newRoot[len] = newSizes
-	// console.log('is returning:', JSON.stringify(newRoot))
+	newRoot[len] = newSizes;
 	return newRoot
 }
 

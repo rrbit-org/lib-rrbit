@@ -1,6 +1,6 @@
 import {empty, one} from '../shared/constructors';
 import {append} from '../append';
-import iterator from '../iterator';
+import {iterator} from '../iterator';
 import {expect} from 'chai';
 
 var DEPTHS = [

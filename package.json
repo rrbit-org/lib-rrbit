@@ -4,5 +4,24 @@
   "description": "core operations for use on relaxed radix balanced vectors",
   "main": "src/index.js",
   "repository": "https://github.com/team-rrbit/lib-rrbit",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.24.0",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.0",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-stage-0": "^6.22.0",
+    "benchmark": "^2.1.3",
+    "chai": "^3.5.0",
+    "fantasy-check": "^0.3.2",
+    "immutable": "^3.8.1",
+    "immutable-array-methods": "^1.5.0",
+    "mocha": "^3.2.0",
+    "mori": "^0.3.2",
+    "rollup": "^0.41.6"
+  },
+  "scripts": {
+    "test:eagle": "./node_modules/.bin/mocha --compilers js:babel-core/register src/eagle/test/*.test.js",
+    "test": "npm run test:eagle"
+  }
 }

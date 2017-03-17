@@ -1,6 +1,6 @@
 import {empty} from '../shared/constructors';
 import {append} from '../append';
-import nth from '../nth';
+import {nth} from '../nth';
 import {expect} from 'chai';
 
 var DEPTHS = [
@@ -20,7 +20,7 @@ function factory(len) {
 	return { length: len }
 }
 
-describe("rrb with focus tests", function() {
+describe("eagle basic tests", function() {
 
 	describe("basic construction tests", function() {
 		var none;

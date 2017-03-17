@@ -1,6 +1,6 @@
 import {empty, one} from '../shared/constructors';
 import {prepend} from '../prepend';
-import nth from '../nth';
+import {nth} from '../nth';
 import {expect} from 'chai';
 
 var DEPTHS = [

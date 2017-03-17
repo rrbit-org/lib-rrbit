@@ -20,7 +20,12 @@
 
 
 
-
+export function of(value, factory) {
+	var vec = empty(factory);
+	vec.length = 1;
+	vec.display0 = [value];
+	return vec;
+}
 
 export function empty(factory) {
 	var list = factory(0);

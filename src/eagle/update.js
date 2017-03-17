@@ -1,6 +1,6 @@
-import {fromFocusOf} from './_constructors';
-import {normalizeAndFocusOnǃ, makeTransientIfNeeded} from './_vectorPointer';
-import {aSet} from './_array'
+import {fromFocusOf} from './shared/constructors';
+import {normalizeAndFocusOnǃ, makeTransientIfNeeded} from './shared/tree';
+import {aSet} from './shared/array'
 
 /**
  *

@@ -6,14 +6,27 @@ import {iterator} from './eagle/iterator'
 import {nth} from './eagle/nth'
 import {appendAll} from './eagle/appendAll'
 import {update} from './eagle/update'
+import {empty as emptyMixin, of as oneMixin} from './eagle/shared/constructors'
 
-// example BYO class implementation
+// example BYO class implementation. not meant for actual use
 function Vector(size) {
 	this.length = size || 0;
 }
 
 function create(len) {
 	return new Vector(len);
+}
+
+export function empty() {
+	return emptyMixin(create)
+}
+
+export function of(first, ...rest) {
+	var vec = oneMixin(first, create);
+	for (var value of rest) {
+		vec = vec.append(value);
+	}
+	return vec;
 }
 
 var proto = Vector.prototype;
