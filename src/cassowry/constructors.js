@@ -18,17 +18,16 @@
 
 function Vector(len) {
 	this.length = len;
+	this.root = null; // the tree structure
+	this.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
+	this.aft = [];    // transient tail of list, optimized for fast appends only  (native array)
+	this.treeLength = 0;
+	this.treeDepth = 0;
 }
 
 export const CtorTrait = {
 	empty() {
 		var vec = new Vector(0);
-
-		vec.root = null; // the tree structure
-		vec.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
-		vec.aft = [];    // transient tail of list, optimized for fast appends only  (native array)
-		vec.treeLength = 0;
-		vec.treeDepth = 0;
 
 		// todo: need to evaluate options to optimize calc for length of tail
 		// e.g. clojure uses (length < 32 ? 0 : ((length - 1) >>> 5) << 5
@@ -55,8 +54,8 @@ export const CtorTrait = {
 		return vec;
 	},
 
-	clone(rrb: Vector, factory: Factory) {
-		var vec = factory(rrb.length);
+	clone(rrb: Vector) {
+		var vec = new Vector(rrb.length);
 
 		vec.root = rrb.root;
 		vec.pre = rrb.pre;
@@ -66,4 +65,4 @@ export const CtorTrait = {
 
 		return vec;
 	}
-}
+};

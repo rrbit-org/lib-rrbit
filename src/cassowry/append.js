@@ -1,7 +1,7 @@
-import {clone} from './constructors'
+import {CtorTrait} from './constructors'
 
 export function append(value, rrb, factory) {
-	var vec = clone(rrb);
+	var vec = CtorTrait.clone(rrb);
 	var aft = vec.aft;
 
 	// need to determine best way to calc offset here, as aft may be 
