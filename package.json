@@ -7,21 +7,30 @@
   "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.24.0",
+    "babel-plugin-syntax-flow": "^6.18.0",
     "babel-plugin-transform-es2015-modules-umd": "^6.24.0",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-polyfill": "^6.23.0",
     "babel-preset-es2015": "^6.24.0",
+    "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.22.0",
     "benchmark": "^2.1.3",
     "chai": "^3.5.0",
+    "chalk": "^1.1.3",
     "fantasy-check": "^0.3.2",
+    "flow-bin": "^0.41.0",
     "immutable": "^3.8.1",
     "immutable-array-methods": "^1.5.0",
+    "jsonfile": "^2.4.0",
     "mocha": "^3.2.0",
     "mori": "^0.3.2",
-    "rollup": "^0.41.6"
+    "rollup": "^0.41.6",
+    "rollup-plugin-flow": "^1.1.1"
   },
   "scripts": {
     "test:eagle": "./node_modules/.bin/mocha --compilers js:babel-core/register src/eagle/test/*.test.js",
-    "test": "npm run test:eagle"
+    "test:only": "./node_modules/.bin/mocha --compilers js:babel-core/register --  ",
+    "test": "npm run test:eagle",
+    "bench:eagle": "node project/benchEagle.js"
   }
 }

@@ -1,4 +1,11 @@
 {
-  "presets": ["es2015"],
-  "plugins": ["transform-es2015-modules-umd"]
+  "presets": [
+//    "flow",
+    "es2015"
+  ],
+  "plugins": [
+    "transform-flow-strip-types",
+//    "syntax-flow",
+    "transform-es2015-modules-umd"
+  ]
 }
