@@ -22,7 +22,7 @@ function factory(len) {
 }
 
 
-describe('eagle prepend tests', function() {
+describe.skip('eagle prepend tests', function() {
 	var pvec = empty(factory);
 	// var MAX = 10000;
 	var MAX = 100;

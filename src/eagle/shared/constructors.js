@@ -1,4 +1,3 @@
-
 /*
  * notes:
  *
@@ -17,52 +16,90 @@
  */
 
 
+// export type Node<T> = Array<Array<T | Node<T> | number>>
+//
+// export type Vector<T> = {
+// 	length: number,
+// 	focus: number,
+// 	focusEnd: number,
+// 	focusStart: number,
+// 	focusDepth: number,
+// 	depth: 1|2|3|4|5|6,
+// 	display0: Array<T>,
+// 	display1: ?Node<T>,
+// 	display2: ?Node<T>,
+// 	display3: ?Node<T>,
+// 	display4: ?Node<T>,
+// 	display5: ?Node<T>
+// }
+//
+// type Factory = <T>(length: number) => Vector<T>
 
-
-
-export function of(value, factory) {
-	var vec = empty(factory);
-	vec.length = 1;
-	vec.display0 = [value];
-	return vec;
-}
-
-export function empty(factory) {
-	var list = factory(0);
-	list.focus = 0;
-	list.focusStart = 0;
-	list.focusEnd = 0;
-	list.focusDepth = 1;
-	list.focusRelax = 0;
-	list.display0 = [];
-	list.display1 = null;
-	list.display2 = null;
-	list.display3 = null;
-	list.display4 = null;
-	list.display5 = null;
-	list.depth = 1;
-	return list;
+function DummyVector(len) {
+	this.length = len;
 }
 
 
-export function fromFocusOf(src, factory) {
-	var list = factory(src.length);
-	list.focusStart = src.focusStart;
-	list.focusDepth = src.focusDepth;
-	list.focusRelax = src.focusRelax;
-	list.focusEnd = src.focusEnd;
-	list.focus = src.focus;
-	list.depth = src.depth;
-
-	// there's a small hack used here with length, where we mutate a shared display
-	list.display0 = src.display0
-	list.display1 = src.display1
-	list.display2 = src.display2
-	list.display3 = src.display3
-	list.display4 = src.display4
-	list.display5 = src.display5
-
-	return list;
+export function mixin(base) {
+	for (var key in CtorTrait) {
+		base[key] = CtorTrait[key];
+	}
+	return base;
 }
 
-export const emptyTransientBlock = new Array(2);
+export function setupAsClass(Class, factory) {
+	Class.make = factory;
+	Class.empty = CtorTrait.empty;
+
+	Class.prototype.make = factory;
+	Class.prototype.empty = CtorTrait.empty;
+
+	Class.prototype.fromFocusOf = CtorTrait.fromFocusOf;
+	return Class;
+}
+
+export var CtorTrait = {
+	make: function(len) {
+		// example: return new MyVector(len)
+		// must return an object with a "length" property
+
+		throw new Error('please override make() with your factory function')
+	},
+	empty() {
+		var vec = this.make(0);
+		vec.focus = 0;
+		vec.focusEnd = 0;
+		vec.focusStart = 0;
+		vec.focusDepth = 1;
+		vec.focusRelax = 0;
+		vec.display0 = [];
+		vec.display1 = null;
+		vec.display2 = null;
+		vec.display3 = null;
+		vec.display4 = null;
+		vec.display5 = null;
+		vec.transient = false;
+		vec.depth = 1;
+		return vec;
+	},
+
+	fromFocusOf(src) {
+		var vec = this.make(src.length);
+		vec.length = src.length;
+		vec.focusStart = src.focusStart;
+		vec.focusDepth = src.focusDepth;
+		vec.focusRelax = src.focusRelax;
+		vec.focusEnd = src.focusEnd;
+		vec.focus = src.focus;
+		vec.depth = src.depth;
+		vec.transient = false;
+		vec.display0 = src.display0;
+		vec.display1 = src.display1;
+		vec.display2 = src.display2;
+		vec.display3 = src.display3;
+		vec.display4 = src.display4;
+		vec.display5 = src.display5;
+		return vec;
+	}
+
+}
