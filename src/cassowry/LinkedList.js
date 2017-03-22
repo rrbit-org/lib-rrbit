@@ -43,10 +43,10 @@ proto.nth = function(i, notFound) {
 };
 
 
-// easy, drop the tail items until the length is n
 proto.take = function take(n) {
 	var list = this;
-	while(list && list.length > n) {
+	n = list.length - n;
+	while(list && list.length != n) {
 		list = list.link;
 	}
 	return list
@@ -55,7 +55,7 @@ proto.take = function take(n) {
 // adding here to help drop() performance(no closures)
 proto.fromArray = fromArray;
 
-// harder, have to drop head by first walking back from end
+
 proto.drop = function drop(n) {
 	var list = this;
 	if (n >= list.length) return;
