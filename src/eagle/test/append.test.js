@@ -1,7 +1,7 @@
 import {CtorTrait} from '../shared/constructors';
 import {AppendTrait} from '../append';
 import {NthTrait} from '../nth';
-import {createClass, DEPTHS} from 'classUtil';
+import {createClass, DEPTHS} from './classUtil';
 import {expect} from 'chai';
 import jsonfile from 'jsonfile';
 
