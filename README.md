@@ -52,3 +52,15 @@ RRB Vectors are able to keep up with or outperform their mutable Array
 counterparts on almost all operations accept append. With a suitable 
 Builder class or helper to convert from your favorite collection type, even 
 this limitation can be solved
+
+
+##### append/push comparisons with other frameworks
+
+|framework                                 | ops per sec     |
+|------------------------------------------|----------------:|
+|immutable-js append 1k                    |    1815.33 op/s |
+|mori vector append 1k                     |    4395.11 op/s |
+|rrbit 1k                                  |    2960.08 op/s |
+|rrbit 1k (Builder mode)                   |   19410.27 op/s |
+|native push 1k mutating(max possible)     |  203927.41 op/s |
+-------------------------------------------------------------
