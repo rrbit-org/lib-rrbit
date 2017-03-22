@@ -12,9 +12,9 @@ export function mixin(base) {
 	return base;
 }
 
-export var AppendTrait =TreeMixin({
-	fromFocusOf: CtorTrait.fromFocusOf,
-	empty: CtorTrait.empty,
+export var AppendTrait = {
+	...CtorTrait,
+	...TreeTrait,
 
 
 	/**
@@ -192,4 +192,4 @@ export var AppendTrait =TreeMixin({
 		list.transient = true;
 	}
 
-});
+};
