@@ -1,5 +1,13 @@
 import {setupAsClass} from '../shared/constructors'
 
+export var DEPTHS = [
+	32, // 0 depth (leaf only)
+	1024, // 1 depth (default min depth)
+	32768, // 2 depth
+	1048576, // 3 depth (1M)
+	33554432, // 4 depth (33.5M)
+	1073741824 // 5 depth (1B) usually will cause out-of-memory by this point in current JS engines
+];
 
 export function createClass(...traits) {
 

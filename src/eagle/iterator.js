@@ -1,4 +1,4 @@
-import {focusOnǃ, normalize} from './shared/tree';
+import {TreeTrait} from './shared/tree';
 
 export function iterator(start, end, rrb) {
 	var len = rrb.length;
@@ -28,7 +28,7 @@ function RangedIterator(startIndex, endIndex, rrb) {
 	this.startIndex = startIndex;
 
 	if (rrb.transient) {
-		normalize(rrb.depth, rrb)
+		this.normalize(rrb.depth, rrb)
 		rrb.transient = false;
 	}
 
@@ -36,7 +36,7 @@ function RangedIterator(startIndex, endIndex, rrb) {
 
 	if (startIndex < endIndex) {
 		this._hasNext = true;
-		focusOnǃ(startIndex, this);
+		this.focusOn(startIndex, this);
 
 		this.blockIndex = this.focusStart + (this.focus & -32);
 		this.lo = this.focus & 31
@@ -52,6 +52,7 @@ function RangedIterator(startIndex, endIndex, rrb) {
 	}
 }
 
+Object.assign(RangedIterator.prototype, TreeTrait);
 
 RangedIterator.prototype.next = function next() {
 	// todo: off by one here, last element should get done = true?
@@ -87,7 +88,7 @@ RangedIterator.prototype.goToNextBlock = function nextBlock() {
 	} else {
 		var _length = this.length
 		if (newBlockIndex < _length) {
-			focusOnǃ(newBlockIndex, this)
+			this.focusOn(newBlockIndex, this)
 			if (_length < this.focusEnd)
 				this.focusEnd = _length
 			this.endLo = Math.min(this.focusEnd - newBlockIndex, 32)
@@ -149,4 +150,6 @@ RangedIterator.prototype.copyFocus = function copyFocus(src, dest) {
 	dest.display5 = src.display5;
 
 	dest.depth = src.depth;
+	dest.length = src.length;
+	dest.transient = src.transient;
 };

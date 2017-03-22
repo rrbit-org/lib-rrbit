@@ -1,18 +1,9 @@
 import {AppendAllTrait} from '../appendAll';
 import {NthTrait} from '../nth';
-import {createClass} from './classUtil';
+import {createClass, DEPTHS} from './classUtil';
 import {expect} from 'chai';
 
 var Vector = createClass(AppendAllTrait, NthTrait);
-
-var DEPTHS = [
-	32, // 0 depth (leaf only)
-	1024, // 1 depth (default min depth)
-	32768, // 2 depth
-	1048576, // 3 depth (1M)
-	33554432, // 4 depth (33.5M)
-	1073741824 // 5 depth (1B) usually will cause out-of-memory by this point in current JS engines
-]
 
 
 describe("eagle: appendAll tests", function() {

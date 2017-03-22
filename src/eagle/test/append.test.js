@@ -1,20 +1,11 @@
-import {setupAsClass, mixin as CtorMixin} from '../shared/constructors';
-import {mixin as AppendMixin} from '../append';
-import {NthMixin} from '../nth';
-// import {nth} from '../nth';
+import {CtorTrait} from '../shared/constructors';
+import {AppendTrait} from '../append';
+import {NthTrait} from '../nth';
+import {createClass, DEPTHS} from 'classUtil';
 import {expect} from 'chai';
 import jsonfile from 'jsonfile';
 
 jsonfile.speces = 4;
-
-var DEPTHS = [
-	32, // 0 depth (leaf only)
-	1024, // 1 depth (default min depth)
-	32768, // 2 depth
-	1048576, // 3 depth (1M)
-	33554432, // 4 depth (33.5M)
-	1073741824 // 5 depth (1B) usually will cause out-of-memory by this point in current JS engines
-];
 
 function pretty(number) {
 	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -28,33 +19,18 @@ function logToFile(obj) {
 /*
 
 // use simple object as base
-var Vector = {};
-function factory(len) {
-    return { length: len }
-}
-CtorMixin(Vector)
-AppendMixin(Vector);
-
-Vector.make = factory;
+var Vector = {
+	make: function factory(len) {
+		return { length: len }
+	},
+	...CtorTrait,
+	...AppendTrait
+};
 
 /*/
-// use class as base
-function Vector(len) {
-	this.length = len;
-}
 
-function create(len) {
-	return new Vector(len)
-}
+var Vector = createClass(AppendTrait, NthTrait);
 
-setupAsClass(Vector, create);
-AppendMixin(Vector.prototype);
-NthMixin(Vector.prototype);
-
-
-// Vector.prototype.append = function(value) {
-// 	return Vector.prototype.append(value, this);
-// }
 //*/
 
 describe("eagle basic tests", function() {
