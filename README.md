@@ -68,4 +68,6 @@ this limitation can be solved
 |immutable-js iteration speed              |    18811.21 op/s| for of loop |
 |rrbit iteration speed                     |    33367.63 op/s| for of loop |
 |native array iteration speed              |    17023.14 op/s| for of loop |
+|native forEach speed                      |    79403.02 op/s|     forEach |
+|rrbit iteration speed                     |   631643.88 op/s|      reduce |
 |--------------------------------------------------------------------------|

@@ -73,13 +73,20 @@ describe('', function() {
 		}
 	})
 
-	it('native iteration speed', function() {
+	it('rrbit reduce speed', function() {
+		var it = iterator(0, list_1k.rrbit.length, list_1k.rrbit);
+		it.reduce(function(acc, value) {
+			value + value;
+		}, null);
+	});
+
+	it.skip('native iteration speed', function() {
 		for (var value of list_1k.native) {
 			value + value;
 		}
 	})
 
-	it.skip('native forEach speed', function() {
+	it('native forEach speed', function() {
 		list_1k.native.forEach(function(value) {
 			value + value;
 		})
