@@ -56,11 +56,16 @@ this limitation can be solved
 
 ##### append/push comparisons with other frameworks
 
-|framework                                 | ops per sec     |
-|------------------------------------------|----------------:|
-|immutable-js append 1k                    |    1815.33 op/s |
-|mori vector append 1k                     |    4395.11 op/s |
-|rrbit 1k                                  |    2960.08 op/s |
-|rrbit 1k (Builder mode)                   |   19410.27 op/s |
-|native push 1k mutating(max possible)     |  203927.41 op/s |
--------------------------------------------------------------
+|framework                                 | ops per sec     |     type    |
+|------------------------------------------|----------------:|:-----------:|
+|immutable-js append 1k                    |    1815.33 op/s | push/append |
+|mori vector append 1k                     |    4395.11 op/s | push/append |
+|rrbit 1k                                  |    2960.08 op/s | push/append |
+|rrbit 1k (Builder mode)                   |   19410.27 op/s | push/append |
+|native push 1k mutating(max possible)     |  203927.41 op/s | push/append |
+|--------------------------------------------------------------------------|
+|mori iteration speed                      |    18052.66 op/s| for of loop |
+|immutable-js iteration speed              |    18811.21 op/s| for of loop |
+|rrbit iteration speed                     |    33367.63 op/s| for of loop |
+|native array iteration speed              |    17023.14 op/s| for of loop |
+|--------------------------------------------------------------------------|
