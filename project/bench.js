@@ -1,7 +1,8 @@
 var path = require('path');
 var Benchmark = require('benchmark');
 var vm = require('vm');
-var babel = require('babel-core');
+// var babel = require('babel-core');
+var babel = require('rollup-plugin-babel')
 var rollup = require('rollup');
 var exec = require('./runSuiteHelper');
 
@@ -35,7 +36,10 @@ module.exports = function run(fileName) {
 	var file = path.resolve(__dirname, fileName);
 
 	rollup.rollup({
-		entry: file
+		entry: file,
+		plugins: [
+			babel()
+		]
 	}).then(function(bundle) {
 
 		// walk all imports
@@ -44,7 +48,7 @@ module.exports = function run(fileName) {
 		});
 
 		// also transform with babel
-		result = babel.transform(result.code);
+		// result = babel.transform(result.code);
 
 		vm.runInNewContext(result.code, {
 			describe: describe,

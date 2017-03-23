@@ -1,12 +1,12 @@
 {
   "presets": [
 //    "flow",
-    "es2016",
+    ["es2015", {"modules": false}],
     "stage-2"
   ],
   "plugins": [
-    "transform-flow-strip-types",
+    "transform-flow-strip-types"
 //    "syntax-flow",
-    "transform-es2015-modules-umd"
+//    "transform-es2015-modules-umd"
   ]
 }

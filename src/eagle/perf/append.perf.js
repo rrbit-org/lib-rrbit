@@ -2,31 +2,23 @@ import Immutable from 'immutable';
 import mori from 'mori';
 // import * as Eagle from '../../eagle'
 import * as v2 from '../../scratch/v2';
-import {setupAsClass, mixin as CtorMixin} from '../shared/constructors';
-import {mixin as AppendMixin} from '../append';
+// import {} from '../shared/constructors';
+import {AppendTrait} from '../append';
+import {createClass, DEPTHS} from '../test/classUtil';
 
 // Vector as a class --------------------------------------------------
-function Vector(len) {
-	this.length = len;
-}
 
-function create(len) {
-	return new Vector(len)
-}
-
-setupAsClass(Vector, create);
-AppendMixin(Vector.prototype);
+var Vector = createClass(AppendTrait)
 
 //Vector as an object --------------------------------------------------
 
-var VectorObj = {};
+var VectorObj = {
+	...AppendTrait
+};
 
 function factory(len) {
 	return { length: len }
 }
-
-CtorMixin(VectorObj);
-AppendMixin(VectorObj);
 
 VectorObj.make = factory;
 
@@ -135,7 +127,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it.skip('native push 1k mutating(max possible)', function() {
+	it('native push 1k mutating(max possible)', function() {
 		var list = []
 		for (var i = 0; 1000 > i; i++) {
 			list.push(i)
