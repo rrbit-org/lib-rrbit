@@ -63,7 +63,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('obj 1k', function() {
+	it.skip('obj 1k', function() {
 		var list = VectorObj.empty();
 
 		for (var i = 0; 1000 > i; i++) {
@@ -111,7 +111,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('v2 1k', function() {
+	it.skip('v2 1k', function() {
 		var list = v2.empty()
 
 		for (var i = 0; 1000 > i; i++) {
@@ -119,7 +119,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('v2 1k !', function() {
+	it.skip('v2 1k !', function() {
 		var list = v2.empty()
 
 		for (var i = 0; 1000 > i; i++) {
@@ -127,7 +127,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('native push 1k mutating(max possible)', function() {
+	it.skip('native push 1k mutating(max possible)', function() {
 		var list = []
 		for (var i = 0; 1000 > i; i++) {
 			list.push(i)

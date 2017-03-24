@@ -34,12 +34,31 @@ export var AppendTrait = {
 			return vec;
 		}
 
+		/* play with inlining happy path for performance
+		var vec = this.make(list.length);
+		vec.focusStart = list.focusStart;
+		vec.focusDepth = list.focusDepth;
+		vec.focusRelax = list.focusRelax;
+		vec.focusEnd = list.focusEnd;
+		vec.focus = list.focus;
+		vec.depth = list.depth;
+		vec.display0 = list.display0;
+		vec.display1 = list.display1;
+		vec.display2 = list.display2;
+		vec.display3 = list.display3;
+		vec.display4 = list.display4;
+		vec.display5 = list.display5;
+		/*/
 		var vec = this.fromFocusOf(list);
+		//*/
 		vec.transient = list.transient;
 		vec.length = list.length + 1;
 
 
-		this.focusOnLastBlock(list.length, vec);
+		// vector focus is not focused block of the last element
+		if (((vec.focusStart + vec.focus) ^ (list.length - 1)) >= 32) {
+			return this.normalizeAndFocusOn(list.length - 1, vec);
+		}
 
 		var elemIndexInBlock = (list.length - vec.focusStart) & 31;
 		if (elemIndexInBlock === 0) { // next element will go in a new block position
@@ -48,19 +67,28 @@ export var AppendTrait = {
 		} else { // if next element will go in current block position
 
 			vec.focusEnd = vec.length;
-			var d0 = vec.display0;
+
 			//TODO: optimistic auto-subvec performance hack
 			/*
 			if (list.display0.length !== elemIndexInBlock) {
-				d0 = d0.slice(0, elemIndexInBlock);
+			 vec.display0 = vec.display0.slice(0, elemIndexInBlock);
 			}
+			vec.display0[elemIndexInBlock] = value;
 			 /*/
-			d0 = d0.slice(0)
-			//*/
-
+			var d0 = vec.display0.slice(0)
 			d0[elemIndexInBlock] = value;
 			vec.display0 = d0;
+			//*/
+
+			//make transient if needed
+			/* play with inlining happy path for performance
 			this.makeTransientIfNeeded(vec)
+			/*/
+			if (vec.depth > 1 && !vec.transient) {
+				this.copyDisplaysAndNullFocusedBranch(vec.depth, vec.focus | vec.focusRelax, vec);
+				vec.transient = true
+			}
+			//*/
 		}
 
 
