@@ -60,7 +60,7 @@ this limitation can be solved
 |------------------------------------------|----------------:|:-----------:|
 |immutable-js append 1k                    |    1815.33 op/s | push/append |
 |mori vector append 1k                     |    4395.11 op/s | push/append |
-|rrbit 1k                                  |    2960.08 op/s | push/append |
+|rrbit 1k                                  |    3407.20 op/s | push/append |
 |rrbit 1k (Builder mode)                   |   19410.27 op/s | push/append |
 |native push 1k mutating(max possible)     |  203927.41 op/s | push/append |
 |--------------------------------------------------------------------------|

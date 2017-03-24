@@ -47,20 +47,20 @@ export var AppendTrait = {
 			this._appendBackNewBlock(value, list.length, vec)
 		} else { // if next element will go in current block position
 
-			this._appendOnCurrentBlock(value, elemIndexInBlock, list);
-			list.focusEnd = list.length;
-			var d0 = list.display0;
-			//TODO: optimistic auto-subslice performance hack
+			vec.focusEnd = vec.length;
+			var d0 = vec.display0;
+			//TODO: optimistic auto-subvec performance hack
 			/*
-			if (d0.length !== elemIndexInBlock) {
-				d0 = list.display0 = d0.slice(0, elemIndexInBlock);
+			if (list.display0.length !== elemIndexInBlock) {
+				d0 = d0.slice(0, elemIndexInBlock);
 			}
-			/*/
-			 list.display0 = d0.slice(0, elemIndexInBlock);
+			 /*/
+			d0 = d0.slice(0)
 			//*/
 
 			d0[elemIndexInBlock] = value;
-			this.makeTransientIfNeeded(list)
+			vec.display0 = d0;
+			this.makeTransientIfNeeded(vec)
 		}
 
 
@@ -104,24 +104,6 @@ export var AppendTrait = {
 	},
 
 
-	_appendOnCurrentBlock(value, elemIndexInBlock, list) {
-
-		list.focusEnd = list.length;
-		var d0 = list.display0;
-		//TODO: optimistic auto-subvec performance hack
-		//*
-		if (list.display0.length !== elemIndexInBlock) {
-			d0 = d0.slice(0, elemIndexInBlock);
-		}
-		/*/
-		 d0 = d0.slice(0, elemIndexInBlock);
-		 */
-		//*/
-
-		d0[elemIndexInBlock] = value;
-		list.display0 = d0;
-		this.makeTransientIfNeeded(list)
-	},
 
 	_appendBackNewBlock(elem, _length, list) {
 		var oldDepth = list.depth;
