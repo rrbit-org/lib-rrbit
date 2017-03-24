@@ -34,6 +34,7 @@
     "test:only": "./node_modules/.bin/mocha --compilers js:babel-core/register --  ",
     "test": "npm run test:eagle",
     "bench:eagle": "node project/benchEagle.js",
-    "bench:iter": "node project/benchIterator.js"
+    "bench:iter": "node project/benchIterator.js",
+    "bench:drop": "node project/benchDrop.js"
   }
 }
