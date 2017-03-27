@@ -2,7 +2,7 @@
   "name": "lib-rrbit",
   "version": "1.0.0",
   "description": "core operations for use on relaxed radix balanced vectors",
-  "main": "src/index.js",
+  "main": "lib/index.cjs.js",
   "module": "src/index.js",
   "repository": "https://github.com/team-rrbit/lib-rrbit",
   "license": "MIT",
