@@ -1,20 +1,36 @@
-import {empty, of} from './eagle';
-import {empty as cEmpty,of as cOf} from './cassowry';
+// import {} from './shared/constructors';
+import {AppendTrait} from './append';
+import {AppendAllTrait} from './appendAll';
+import {NthTrait} from './nth';
+import {DropTrait} from './drop';
+import {TakeTrait} from './take';
+import {PrependTrait} from './prepend';
+import {UpdateTrait} from './update';
+import {iterator, reverseIterator} from './iterator';
 
-const Eagle = {
-	empty: empty,
-	of: of,
-};
+/**
+ *
+ * @param {function(number): Vector} factory - your class factory(must return any object with a 'length' property)
+ */
+export function setup(factory) {
+	var lib = {
+		factory,
+		iterator,
+		reverseIterator
+	};
 
-const Cassowry = {
-	empty: cEmpty,
-	of: cOf
-};
 
+	Object.assign(lib, DropTrait);
+	Object.assign(lib, TakeTrait);
+	Object.assign(lib, UpdateTrait);
+	Object.assign(lib, PrependTrait);
+	Object.assign(lib, AppendTrait);
+	Object.assign(lib, AppendAllTrait);
 
-//TODO: figure out better exposed exports API
+	var publicMethods = 'drop take update prepend append appendǃ appendAll'.split(' ');
+	for (var name in publicMethods) {
+		lib[name] = lib[name].bind(lib);
+	}
 
-export {
-	Eagle,
-	Cassowry
+	return lib;
 }
