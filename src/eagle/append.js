@@ -1,16 +1,5 @@
 import {CtorTrait} from './shared/constructors';
-import {TreeTrait, mixin as TreeMixin} from './shared/tree';
-// import {arraycopy} from './shared/array';
-
-
-// using prototype instead of closures for performance
-export function mixin(base) {
-
-	for (var key in AppendTrait) {
-		base[key] = AppendTrait[key];
-	}
-	return base;
-}
+import {TreeTrait} from './shared/tree';
 
 export var AppendTrait = {
 	...CtorTrait,

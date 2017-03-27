@@ -20,7 +20,7 @@ function logToFile(obj) {
 
 // use simple object as base
 var Vector = {
-	make: function factory(len) {
+	factory: function factory(len) {
 		return { length: len }
 	},
 	...CtorTrait,

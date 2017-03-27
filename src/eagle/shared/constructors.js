@@ -48,10 +48,10 @@ export function mixin(base) {
 }
 
 export function setupAsClass(Class, factory) {
-	Class.make = factory;
+	Class.factory = factory;
 	Class.empty = CtorTrait.empty;
 
-	Class.prototype.make = factory;
+	Class.prototype.factory = factory;
 	Class.prototype.empty = CtorTrait.empty;
 
 	Class.prototype.fromFocusOf = CtorTrait.fromFocusOf;
@@ -59,14 +59,14 @@ export function setupAsClass(Class, factory) {
 }
 
 export var CtorTrait = {
-	make: function(len) {
+	factory: function(len) {
 		// example: return new MyVector(len)
 		// must return an object with a "length" property
 
 		throw new Error('please override make() with your factory function')
 	},
 	empty() {
-		var vec = this.make(0);
+		var vec = this.factory(0);
 		vec.focus = 0;
 		vec.focusEnd = 0;
 		vec.focusStart = 0;
@@ -84,7 +84,7 @@ export var CtorTrait = {
 	},
 
 	fromFocusOf(src) {
-		var vec = this.make(src.length);
+		var vec = this.factory(src.length);
 		vec.length = src.length;
 		vec.focusStart = src.focusStart;
 		vec.focusDepth = src.focusDepth;

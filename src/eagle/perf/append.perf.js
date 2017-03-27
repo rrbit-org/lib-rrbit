@@ -20,7 +20,7 @@ function factory(len) {
 	return { length: len }
 }
 
-VectorObj.make = factory;
+VectorObj.factory = factory;
 
 describe('append/push comparisons', function() {
 
