@@ -34,23 +34,7 @@ export var AppendTrait = {
 			return vec;
 		}
 
-		/* play with inlining happy path for performance
-		var vec = this.make(list.length);
-		vec.focusStart = list.focusStart;
-		vec.focusDepth = list.focusDepth;
-		vec.focusRelax = list.focusRelax;
-		vec.focusEnd = list.focusEnd;
-		vec.focus = list.focus;
-		vec.depth = list.depth;
-		vec.display0 = list.display0;
-		vec.display1 = list.display1;
-		vec.display2 = list.display2;
-		vec.display3 = list.display3;
-		vec.display4 = list.display4;
-		vec.display5 = list.display5;
-		/*/
 		var vec = this.fromFocusOf(list);
-		//*/
 		vec.transient = list.transient;
 		vec.length = list.length + 1;
 
@@ -81,7 +65,7 @@ export var AppendTrait = {
 			//*/
 
 			//make transient if needed
-			/* play with inlining happy path for performance
+			//* play with inlining happy path for performance
 			this.makeTransientIfNeeded(vec)
 			/*/
 			if (vec.depth > 1 && !vec.transient) {
@@ -101,34 +85,39 @@ export var AppendTrait = {
 	 * a more performant version meant for use in builders or private loops
 	 *
 	 * @param value
-	 * @param list
+	 * @param vec
 	 * @return {*}
 	 */
-	appendǃ(value, list) {
-		if (list.length === 0) {
-			list.length = 1;
-			list.display0 = [value];
-			return list;
+	appendǃ(value, vec) {
+		if (vec.length === 0) {
+			vec.length = 1;
+			vec.focusEnd = 1;
+			vec.display0 = [value];
+			return vec;
 		}
 
-		list.length += 1;
+		var oldLen = vec.length;
+		vec.length += 1;
 
-		this.focusOnLastBlock(list.length, list);
+		// vector focus is not focused block of the last element
+		if (((vec.focusStart + vec.focus) ^ (oldLen)) >= 32) {
+			return this.normalizeAndFocusOn(oldLen, vec);
+		}
 
 
 
-		var elemIndexInBlock = (list.length - list.focusStart) & 31;
+		var elemIndexInBlock = (oldLen - vec.focusStart) & 31;
 		if (elemIndexInBlock === 0) {
 			// next element will go in a new block position
-			this._appendBackNewBlock(value, list.length, list)
+			this._appendBackNewBlock(value, oldLen, vec)
 		} else {
 			// if next element will go in current focused block
-			list.focusEnd = list.length;
-			list.display0[elemIndexInBlock] = value;
-			this.makeTransientIfNeeded(list)
+			vec.focusEnd = vec.length;
+			vec.display0[elemIndexInBlock] = value;
+			this.makeTransientIfNeeded(vec)
 		}
 
-		return list;
+		return vec;
 	},
 
 

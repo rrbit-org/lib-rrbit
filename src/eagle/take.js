@@ -32,9 +32,9 @@ export var TakeTrait = {
 
 		if (rrb.depth > 1) {
 			this.focusOn(n - 1, vec);
-			var d0len = (vec.focus & 31) + 1;
-			if (d0len != 32) {
-				vec.display0 = vec.display0.slice(0, d0len);
+			var focusInblock = (vec.focus & 31) + 1;
+			if (focusInblock != 32) {
+				vec.display0 = vec.display0.slice(0, focusInblock);
 			}
 
 			var cutIndex = vec.focus | vec.focusRelax;
@@ -80,9 +80,7 @@ export var TakeTrait = {
 
 
 		} else if (/* depth==1 && */ n != 32) {
-			var d0 = new Array(n);
-			this.arraycopy(vec.display0, 0, d0, 0, n);
-			vec.display0 = d0;
+			vec.display0 = vec.display0.slice(0, n);
 			vec.focus = 0;
 			vec.focusStart = 0;
 			vec.focusDepth = 1;

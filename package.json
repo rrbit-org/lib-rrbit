@@ -35,6 +35,7 @@
     "test": "npm run test:eagle",
     "bench:eagle": "node project/benchEagle.js",
     "bench:iter": "node project/benchIterator.js",
+    "bench:conc": "node project/benchConcat.js",
     "bench:drop": "node project/benchDrop.js"
   }
 }

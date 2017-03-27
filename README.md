@@ -54,7 +54,7 @@ Builder class or helper to convert from your favorite collection type, even
 this limitation can be solved
 
 
-##### append/push comparisons with other frameworks
+##### comparisons with other frameworks
 
 |framework                                 | ops per sec     |     type    |
 |------------------------------------------|----------------:|:-----------:|
@@ -62,7 +62,7 @@ this limitation can be solved
 |mori vector append 1k                     |    4395.11 op/s | push/append |
 |rrbit 1k                                  |    3407.20 op/s | push/append |
 |rrbit 1k (Builder mode)                   |   19410.27 op/s | push/append |
-|native push 1k mutating(max possible)     |  203927.41 op/s | push/append |
+|native mutating push 1k(max possible)     |  203927.41 op/s | push/append |
 |--------------------------------------------------------------------------|
 |mori iteration speed                      |    18052.66 op/s| for of loop |
 |immutable-js iteration speed              |    18811.21 op/s| for of loop |
