@@ -1,4 +1,3 @@
-// import {} from './shared/constructors';
 import {AppendTrait} from './append';
 import {AppendAllTrait} from './appendAll';
 import {NthTrait} from './nth';
@@ -14,23 +13,21 @@ import {iterator, reverseIterator} from './iterator';
  */
 export function setup(factory) {
 	var lib = {
-		factory,
 		iterator,
-		reverseIterator
+		reverseIterator,
+		...DropTrait,
+		...TakeTrait,
+		...NthTrait,
+		...UpdateTrait,
+		...PrependTrait,
+		...AppendTrait,
+		...AppendAllTrait,
+		factory
 	};
 
-
-	Object.assign(lib, DropTrait);
-	Object.assign(lib, TakeTrait);
-	Object.assign(lib, UpdateTrait);
-	Object.assign(lib, PrependTrait);
-	Object.assign(lib, AppendTrait);
-	Object.assign(lib, AppendAllTrait);
-
-	var publicMethods = 'drop take update prepend append appendǃ appendAll'.split(' ');
-	for (var name in publicMethods) {
-		lib[name] = lib[name].bind(lib);
-	}
+	'nth drop take update prepend append appendǃ appendAll'
+		.split(' ')
+		.forEach(name => lib[name] = lib[name].bind(lib));
 
 	return lib;
 }
