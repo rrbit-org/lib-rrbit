@@ -54,7 +54,9 @@ describe('eagle drop() tests', function() {
 			a: Math.round(src.length * 0.25),
 			b: Math.round(src.length * 0.55),
 			c: Math.round(src.length * 0.75),
-			d: Math.round(src.length)
+			e: Math.round(src.length * 0.85),
+			f: Math.round(src.length * 0.95)
+			// z: Math.round(src.length)
 		};
 
 		for (var key in sizes) {
