@@ -18,7 +18,7 @@ export var NthTrait = {
 		if (index < 0)
 			index += length;
 
-		if (index < 0 || length < index) { // index is in the vector bounds
+		if (index < 0 || length <= index) { // index is in the vector bounds
 			return notFound
 		}
 
