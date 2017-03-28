@@ -41,12 +41,22 @@ export function setup(factory) {
 		factory
 	};
 
-	var VectorApi = {};
-
-	'nth drop take update prepend append appendǃ appendAll empty iterator reverseIterator'
-		.split(' ')
-		.forEach(name =>
-			lib[name] = VectorApi[name].bind(lib));
+	var VectorApi = [
+		'nth',
+		'drop',
+		'take',
+		'update',
+		'prepend',
+		'append',
+		'appendǃ',
+		'appendAll',
+		'empty',
+		'iterator',
+		'reverseIterator'
+	].reduce((api, name) => {
+		api[name] = lib[name].bind(lib);
+		return api;
+	}, {});
 
 	return VectorApi;
 }

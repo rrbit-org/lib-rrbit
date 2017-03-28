@@ -97,7 +97,7 @@ RangedIterator.prototype.next = function next() {
  * @param acc
  * @return {*}
  */
-RangedIterator.prototype.reduce = function reduce(fn, acc) {
+RangedIterator.prototype.reduce = function(fn, acc) {
 
 	var blockIndex = this.blockIndex;
 
@@ -120,7 +120,6 @@ RangedIterator.prototype.reduce = function reduce(fn, acc) {
 				var newBlockIndexInFocus = newBlockIndex - _focusStart
 				this.gotoNextBlockStart(newBlockIndexInFocus, newBlockIndexInFocus ^ (oldBlockIndex - _focusStart), this)
 				endLo = Math.min(_focusEnd - newBlockIndex, 32)
-				return
 			} else {
 				var _length = this.length
 				if (newBlockIndex < _length) {
@@ -179,7 +178,6 @@ RangedIterator.prototype.find = function find(predicate) {
 				var newBlockIndexInFocus = newBlockIndex - _focusStart
 				this.gotoNextBlockStart(newBlockIndexInFocus, newBlockIndexInFocus ^ (oldBlockIndex - _focusStart), this)
 				endLo = Math.min(_focusEnd - newBlockIndex, 32)
-				return
 			} else {
 				var _length = this.length
 				if (newBlockIndex < _length) {
@@ -215,7 +213,6 @@ RangedIterator.prototype.goToNextBlock = function nextBlock() {
 		var newBlockIndexInFocus = newBlockIndex - _focusStart
 		this.gotoNextBlockStart(newBlockIndexInFocus, newBlockIndexInFocus ^ (oldBlockIndex - _focusStart), this)
 		this.endLo = Math.min(_focusEnd - newBlockIndex, 32)
-		return
 	} else {
 		var _length = this.length
 		if (newBlockIndex < _length) {
