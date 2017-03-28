@@ -8,8 +8,24 @@ import {UpdateTrait} from './update';
 import {iterator, reverseIterator} from './iterator';
 
 /**
+ * @type VectorApi
+ * @property {function(number, Vector): Vector} VectorApi.take
+ * @property {function(number, Vector): Vector} VectorApi.drop
+ * @property {function(number, Vector, *): Vector} VectorApi.nth
+ * @property {function(number, T, Vector<T>): Vector<T>} VectorApi.update
+ * @property {function(number, T, Vector<T>): Vector<T>} VectorApi.prepend
+ * @property {function(number, T, Vector<T>): Vector<T>} VectorApi.append
+ * @property {function(number, T, Vector<T>): Vector<T>} VectorApi.appendǃ
+ * @property {function(Vector, Vector): Vector} VectorApi.appendAll
+ * @property {function(): Vector} VectorApi.empty
+ * @property {function(number, number, Vector): Iterator} VectorApi.iterator
+ * @property {function(number, number, Vector): Iterator} VectorApi.reverseIterator
+ */
+
+/**
  *
  * @param {function(number): Vector} factory - your class factory(must return any object with a 'length' property)
+ * @return {VectorApi}
  */
 export function setup(factory) {
 	var lib = {
@@ -25,9 +41,12 @@ export function setup(factory) {
 		factory
 	};
 
-	'nth drop take update prepend append appendǃ appendAll'
-		.split(' ')
-		.forEach(name => lib[name] = lib[name].bind(lib));
+	var VectorApi = {};
 
-	return lib;
+	'nth drop take update prepend append appendǃ appendAll empty iterator reverseIterator'
+		.split(' ')
+		.forEach(name =>
+			lib[name] = VectorApi[name].bind(lib));
+
+	return VectorApi;
 }

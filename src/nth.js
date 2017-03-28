@@ -1,13 +1,8 @@
-import {mixin as TreeMixin} from './shared/tree';
+import {TreeTrait} from './shared/tree';
 
-export function NthMixin(base) {
-	for (var key in NthTrait) {
-		base[key] = NthTrait[key];
-	}
-	return base;
-}
 
-export var NthTrait = TreeMixin({
+export var NthTrait = {
+	...TreeTrait,
 	/**
 	 * a public 'get' method
 	 *
@@ -94,4 +89,4 @@ export var NthTrait = TreeMixin({
 		}
 	}
 
-});
+};
