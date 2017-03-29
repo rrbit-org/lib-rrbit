@@ -25,18 +25,19 @@ export var AppendTrait = {
 
 		var vec = this.fromFocusOf(list);
 		vec.transient = list.transient;
-		vec.length = list.length + 1;
+		var oldLen = list.length;
+		vec.length += 1;
 
 
 		// vector focus is not focused block of the last element
-		if (((vec.focusStart + vec.focus) ^ (list.length - 1)) >= 32) {
-			return this.normalizeAndFocusOn(list.length - 1, vec);
+		if (((vec.focusStart + vec.focus) ^ (oldLen - 1)) >= 32) {
+			this.normalizeAndFocusOn(oldLen - 1, vec);
 		}
 
-		var elemIndexInBlock = (list.length - vec.focusStart) & 31;
+		var elemIndexInBlock = (oldLen - vec.focusStart) & 31;
 		if (elemIndexInBlock === 0) { // next element will go in a new block position
 
-			this._appendBackNewBlock(value, list.length, vec)
+			this._appendBackNewBlock(value, oldLen, vec)
 		} else { // if next element will go in current block position
 
 			vec.focusEnd = vec.length;
@@ -89,8 +90,8 @@ export var AppendTrait = {
 		vec.length += 1;
 
 		// vector focus is not focused block of the last element
-		if (((vec.focusStart + vec.focus) ^ (oldLen)) >= 32) {
-			return this.normalizeAndFocusOn(oldLen, vec);
+		if (((vec.focusStart + vec.focus) ^ (oldLen - 1)) >= 32) {
+			this.normalizeAndFocusOn(oldLen - 1, vec);
 		}
 
 

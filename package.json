@@ -1,6 +1,6 @@
 {
   "name": "lib-rrbit",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "core operations for use on relaxed radix balanced vectors",
   "main": "lib/index.cjs.js",
   "module": "src/index.js",
@@ -33,9 +33,8 @@
     "rollup-plugin-flow": "^1.1.1"
   },
   "scripts": {
-    "test:eagle": "./node_modules/.bin/mocha --compilers js:babel-core/register src/eagle/test/*.test.js",
+    "test": "./node_modules/.bin/mocha --compilers js:babel-core/register src/eagle/test/*.test.js",
     "test:only": "./node_modules/.bin/mocha --compilers js:babel-core/register --  ",
-    "test": "npm run test:eagle",
     "bench:eagle": "node project/benchEagle.js",
     "bench:iter": "node project/benchIterator.js",
     "bench:conc": "node project/benchConcat.js",

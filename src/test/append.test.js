@@ -121,4 +121,28 @@ describe("eagle basic tests", function() {
 		testOrdering(DEPTHS[3])
 	})
 
+	describe('builder append! tests', function() {
+
+		function testOrdering(MAX) {
+			it(`retrieves ${MAX} items in same order as inserted`, function() {
+				var vec = Vector.empty();
+
+				for (var i = 0; MAX > i; i++) {
+					vec = vec.appendǃ(i, vec);
+				}
+
+				expect(vec.length).to.equal(MAX, 'length is not equal');
+
+				for (var i = 0; MAX > i; i++) {
+					expect(vec.nth(i, vec)).to.equal(i, 'value at position was wrong');
+				}
+			})
+		}
+
+		testOrdering(DEPTHS[0]);
+		testOrdering(DEPTHS[1]);
+		testOrdering(DEPTHS[2]);
+		testOrdering(DEPTHS[3]);
+	})
+
 });
