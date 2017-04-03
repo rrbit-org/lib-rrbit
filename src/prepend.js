@@ -9,19 +9,18 @@ export var PrependTrait = {
 	 *
 	 * @param {T} value
 	 * @param {Vector<T>} list
-	 * @param {function(number)} create
 	 * @return {Vector<T>}
 	 */
-	prepend(value, list, create) {
+	prepend(value, list) {
 
 		if (list.length === 0) {
-			var vec = this.empty(create);
+			var vec = this.empty();
 			vec.length = 1;
 			vec.display0 = [value];
 			return vec;
 		}
 
-		var vec = this.fromFocusOf(list, create);
+		var vec = this.fromFocusOf(list);
 		vec.length = list.length;
 		vec.transient = list.transient;
 		vec.length = list.length + 1;

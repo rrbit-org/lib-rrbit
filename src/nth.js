@@ -57,7 +57,7 @@ export var NthTrait = {
 		//when in relaxed mode, we may have to offset the index a little
 		//to find the branch our value lives in
 		var sizes = display[display.length - 1];
-		do {
+		while (sizes != null) {
 			var sizesIdx = this.getIndexInSizes(sizes, index);
 			if (sizesIdx != 0)
 				index -= sizes[sizesIdx - 1];
@@ -67,7 +67,7 @@ export var NthTrait = {
 			else
 				sizes = null;
 			depth -= 1;
-		} while (sizes != null);
+		}
 
 		return this._getElemD(depth, index, display);
 	},

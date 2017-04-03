@@ -440,6 +440,9 @@ export var TreeTrait = {
 			// [null, list.display_...] from above should get un-nulled ?
 			var newRoot = this.copyAndIncLeftRoot(list['display' + (_depth - 1)], list.transient, _depth - 1);
 
+			if (_depth == 2) {
+				newRoot[newRoot.length - 1] = null;
+			}
 			if (list.transient) {
 				this.withRecomputeSizes(newRoot, _depth, 1);
 				newRoot[1] = list['display' + (_depth - 2)]
@@ -549,7 +552,7 @@ export var TreeTrait = {
 		var newRoot = new Array(len + 1);
 		this.arraycopy(node, 0, newRoot, 1, len - 1);
 
-		var oldSizes = node[len - 1];
+		var oldSizes = null; //node[len - 1]; // on prepends, we always must rebuild
 		var newSizes = this.makeIntArray(len);
 		if (oldSizes != null) {
 			if (transient) {
