@@ -4,13 +4,26 @@ Vectors(i.e Arrays) implementing a Relaxed-Radix-Balance technique from the
 [2015 paper](https://pdfs.semanticscholar.org/b26a/3dc9050f54a37197ed44711c0e42063e9b96.pdf)
 
 
-this library adopts a Bring-Your-Own base class style to easily allow 
+this library adopts a Bring-Your-Own base factory(class) to easily allow 
 seamless integrations across multiple environments.
 
-If your looking for a immutable collection library, considering looking at our sister
+If your looking for a immutable collection implementation, considering looking at our sister
 project instead: [rrbit-js](http://github.com/rrbit-org/rrbit-js)
 
 
+## About
+lib-rrbit aims to ease your transition to immutable collections, by letting you decide
+the API for you needs, while handling all the bit-fiddling and dark magic persistence 
+algorithms behind the scenes. A typical well rounded List class can be quickly put together
+in less than 300 LOC, while adding around 10k(unminified) to your project.
+
+Want your List's to return Optionals or Maybes instead of nulls? try it!
+
+Need a List API that mimic's your your platform's (e.g. Java's ArrayList or Elm's Array), knock it out
+in an afternoon!
+
+This project hope to bring more options to JS that help make it easy to focus on business logic
+and worry less about shared mutable state
 
 
 
@@ -49,18 +62,20 @@ collection operations can be build from these:
 
 ### Performance
 RRB Vectors are able to keep up with or outperform their mutable Array
-counterparts on almost all operations accept append. With a suitable 
+counterparts on almost all operations save append. With a suitable 
 Builder class or helper to convert from your favorite collection type, even 
-this limitation can be solved
+this limitation can be mitigated
 
 
 ##### comparisons with other frameworks
 
 |framework                                 | ops per sec     |     type    |
 |------------------------------------------|----------------:|:-----------:|
+|native push 1k immutable with es6 spread  |     335.75 op/s | push/append |
 |immutable-js append 1k                    |    1815.33 op/s | push/append |
 |mori vector append 1k                     |    4395.11 op/s | push/append |
 |rrbit 1k                                  |    3407.20 op/s | push/append |
+|rrbit 1k (Occulance enabled)              |    8012.65 op/s | push/append |
 |rrbit 1k (Builder mode)                   |   19410.27 op/s | push/append |
 |native mutating push 1k(max possible)     |  203927.41 op/s | push/append |
 |--------------------------------------------------------------------------|

@@ -1,7 +1,7 @@
 import Immutable from 'immutable';
 import mori from 'mori';
 // import * as Eagle from '../../eagle'
-import * as v2 from '../../scratch/v2';
+import * as v2 from '../scratch/v2';
 // import {} from '../shared/constructors';
 import {AppendTrait} from '../append';
 import {createClass, DEPTHS} from '../test/classUtil';
@@ -127,10 +127,16 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it.skip('native push 1k mutating(max possible)', function() {
+	it('native push 1k mutating(max possible)', function() {
 		var list = []
 		for (var i = 0; 1000 > i; i++) {
 			list.push(i)
+		}
+	})
+	it('native push 1k immutable with es6 spread', function() {
+		var list = []
+		for (var i = 0; 1000 > i; i++) {
+			list = [...list, i]
 		}
 	})
 

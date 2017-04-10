@@ -35,7 +35,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers js:babel-core/register src/eagle/test/*.test.js",
     "test:only": "./node_modules/.bin/mocha --compilers js:babel-core/register ",
-    "bench:eagle": "node project/benchEagle.js",
+    "bench:push": "node project/benchEagle.js",
     "bench:iter": "node project/benchIterator.js",
     "bench:conc": "node project/benchConcat.js",
     "bench:drop": "node project/benchDrop.js",
