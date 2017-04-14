@@ -204,3 +204,127 @@ function updateRoot(child, root, expand) {
 	}
 	return aSet(root.length - 1, child, root)
 }
+
+export function appendǃ(value, vec) {
+	var aft = vec.aft
+		, totalLength = vec.length
+		, newLength = totalLength + 1
+
+	if ((newLength) === 1073741824) {
+		return IllegalHeight();
+	}
+
+	if (!aft) {
+		aft = vec.aft = []
+	}
+	aft.push(value)
+
+	if (tailLength(newLength) === 0) {
+		vec.root = appendLeafOntoTree(aft, vec.root, tailOffset(totalLength));
+		vec.aft = null
+	}
+	vec.length = newLength;
+
+	return vec;
+}
+
+function appendLeafOntoTreeǃ(leaf, tree, treeLen) {
+	var   d1
+		, d2
+		, d3
+		, d4
+		, d5
+		, n1
+		, n2
+		, n3
+		, n4
+		, n5
+
+	if (!tree || treeLen == 0) {
+		return [leaf]
+	}
+
+	var depth = depthFromLength(treeLen);
+
+	switch (depth) {
+		case 1:
+			return updateRootǃ(leaf, tree, true);
+
+		case 2:
+			d1 = aLast(tree)
+
+			n1 = addNodeǃ(leaf, d1, true)
+			return updateRootǃ(n1, tree, d1.length === 32)
+
+		case 3:
+			d2 = aLast(tree)
+			d1 = aLast(d2)
+
+			n1 = addNodeǃ(leaf, d1, true)
+			n2 = addNodeǃ(n1, d2, d1.length == 32 )
+			return updateRootǃ(n2, tree, n2.length === 1 && d2.length == 32)
+
+		case 4:
+			d3 = aLast(tree)
+			d2 = aLast(d3)
+			d1 = aLast(d2)
+
+			n1 = addNodeǃ(leaf, d1, true)
+			n2 = addNodeǃ(n1, d2, d1.length == 32 )
+			n3 = addNodeǃ(n2, d3, n2.length === 1 && d2.length == 32)
+			return updateRootǃ(n3, tree, n3.length == 1 && d3.length == 32)
+
+		// we should consider removing below lines, as js is limited to max 2gb
+		// an these length are likely to be in stack overflow range anyways
+		case 5:
+			d4 = aLast(tree)
+			d3 = aLast(d4)
+			d2 = aLast(d3)
+			d1 = aLast(d2)
+
+			n1 = addNodeǃ(leaf, d1, true)
+			n2 = addNodeǃ(n1, d2, d1.length === 32 )
+			n3 = addNodeǃ(n2, d3, n2.length === 1 && d2.length === 32)
+			n4 = addNodeǃ(n3, d4, n3.length === 1 && d3.length === 32)
+			return updateRootǃ(n4, tree, n4.length == 1 && d4.length == 32)
+
+		case 6:
+			d5 = aLast(tree)
+			d4 = aLast(d5)
+			d3 = aLast(d4)
+			d2 = aLast(d3)
+			d1 = aLast(d2)
+
+			n1 = addNodeǃ(leaf, d1, true)
+			n2 = addNodeǃ(n1, d2, d1.length === 32 )
+			n3 = addNodeǃ(n2, d3, n2.length === 1 && d2.length === 32)
+			n4 = addNodeǃ(n3, d4, n3.length === 1 && d3.length === 32)
+			n5 = addNodeǃ(n4, d5, n4.length === 1 && d4.length === 32)
+			return updateRootǃ(n5, tree, n5.length == 1 && d5.length == 32)
+	}
+
+}
+
+function addNodeǃ(child, parent, shouldAppend) {
+	if (shouldAppend) {
+		if (parent.length === 32)
+			return[child];
+
+		parent.push(child);
+		return parent;
+	}
+	// parent[parent.length - 1] = child;
+	return parent
+}
+
+function updateRootǃ(child, root, expand) {
+	if (expand) {
+		if (root.length == 32)
+			return [root, [child]];
+
+		root.push(child);
+		return root;
+	}
+	// root[root.length - 1] = child;
+	return root
+}

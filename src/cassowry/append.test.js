@@ -1,5 +1,5 @@
 import {CtorTrait} from './constructors'
-import {append} from './append';
+import {append, appendǃ} from './append';
 import {nth} from './nth'
 
 var DEPTHS = [
@@ -53,4 +53,32 @@ describe('immutable append tests', () => {
 	// testSize(DEPTHS[5])
 })
 
+describe('mutable append tests', () => {
+	function testSize(MAX) {
+		it(`append ${pretty(MAX)} test`, () => {
+
+			var vec = CtorTrait.empty()
+
+			for (var i = 0; MAX > i; i++) {
+
+				vec = appendǃ(i, vec);
+			}
+
+			var NOT_FOUND = {notFound: true}
+
+			for (var i = 0; MAX > i; i++) {
+
+				expect(nth(i, vec, NOT_FOUND)).toEqual(i)
+			}
+
+		});
+	}
+
+	testSize(DEPTHS[0])
+	testSize(DEPTHS[1])
+	testSize(DEPTHS[2])
+	testSize(DEPTHS[3])
+	// testSize(DEPTHS[4])
+	// testSize(DEPTHS[5])
+})
 
