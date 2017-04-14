@@ -13,7 +13,7 @@ project instead: [rrbit-js](http://github.com/rrbit-org/rrbit-js)
 
 ## About
 lib-rrbit aims to ease your transition to immutable collections, by letting you decide
-the API for you needs, while handling all the bit-fiddling and dark magic persistence 
+the API for you needs, while handling all the bit-fiddling and dark magic of persistence 
 algorithms behind the scenes. A typical well rounded List class can be quickly put together
 in less than 300 LOC, while adding around 10k(unminified) to your project.
 
@@ -22,8 +22,8 @@ Want your List's to return Optionals or Maybes instead of nulls? try it!
 Need a List API that mimic's your your platform's (e.g. Java's ArrayList or Elm's Array), knock it out
 in an afternoon!
 
-This project hope to bring more options to JS that help make it easy to focus on business logic
-and worry less about shared mutable state
+This project hope to bring more options to JS that help make it easy to focus on 
+business logic and worry less about shared mutable state
 
 
 
@@ -77,6 +77,8 @@ this limitation can be mitigated
 |rrbit 1k                                  |    3407.20 op/s | push/append |
 |rrbit 1k (Occulance enabled)              |    8012.65 op/s | push/append |
 |rrbit 1k (Builder mode)                   |   19410.27 op/s | push/append |
+|rrbit 1k (Cassowry: Occulance enabled)    |   22929.65 op/s | push/append |
+|rrbit 1k (Cassowry: Builder mode)         |   42168.29 op/s | push/append |
 |native mutating push 1k(max possible)     |  203927.41 op/s | push/append |
 |--------------------------------------------------------------------------|
 |mori iteration speed                      |    18052.66 op/s| for of loop |

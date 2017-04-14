@@ -5,6 +5,10 @@ import * as v2 from '../scratch/v2';
 // import {} from '../shared/constructors';
 import {AppendTrait} from '../append';
 import {createClass, DEPTHS} from '../test/classUtil';
+import {Cassowry} from '../cassowry/index';
+Cassowry.empty = Cassowry.empty.bind(Cassowry)
+Cassowry.appendǃ = Cassowry.appendǃ.bind(Cassowry)
+Cassowry.append = Cassowry.append.bind(Cassowry)
 
 // Vector as a class --------------------------------------------------
 
@@ -24,14 +28,14 @@ VectorObj.factory = factory;
 
 describe('append/push comparisons', function() {
 
-	it('immutable-js append 1k', function() {
+	it.skip('immutable-js append 1k', function() {
 		var list = Immutable.List();
 		for (var i = 0; 1000 > i; i++) {
 			list = list.push(i)
 		}
 	})
 
-	it('mori vector append 1k', function() {
+	it.skip('mori vector append 1k', function() {
 		// the original HAMT, highly optimized for append
 		var list = mori.vector();
 		for (var i = 0; 1000 > i; i++) {
@@ -60,6 +64,23 @@ describe('append/push comparisons', function() {
 
 		for (var i = 0; 1000 > i; i++) {
 			list = list.appendǃ(i, list)
+		}
+	})
+	it('cassowry 1k', function() {
+		var list = Cassowry.empty();
+		var append = Cassowry.append
+
+		for (var i = 0; 1000 > i; i++) {
+			list = append(i, list)
+		}
+	})
+
+	it('cassowry 1k ǃ', function() {
+		var list = Cassowry.empty();
+		var append = Cassowry.appendǃ
+
+		for (var i = 0; 1000 > i; i++) {
+			list = append(i, list)
 		}
 	})
 
@@ -133,7 +154,7 @@ describe('append/push comparisons', function() {
 			list.push(i)
 		}
 	})
-	it('native push 1k immutable with es6 spread', function() {
+	it.skip('native push 1k immutable with es6 spread', function() {
 		var list = []
 		for (var i = 0; 1000 > i; i++) {
 			list = [...list, i]

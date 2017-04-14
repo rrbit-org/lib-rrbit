@@ -1,6 +1,6 @@
-import {CtorTrait} from './constructors'
-import {append, appendǃ} from './append';
-import {nth} from './nth'
+import {Cassowry} from './index'
+
+// import expect from 'jest-matchers'
 
 var DEPTHS = [
 	32, // 0 depth (leaf only) (32 ** 1)
@@ -17,10 +17,16 @@ function pretty(number) {
 
 
 
-describe('canary', () => {
+describe('initialization tests', () => {
 
 	it('can create an empty List', () => {
-		var vec = CtorTrait.empty()
+		var vec = Cassowry.empty()
+		expect(vec).toBeDefined()
+		expect(vec.length).toBe(0)
+		expect(vec.pre).toBe(null)
+		expect(vec.aft).toBe(null)
+		expect(vec.root).toBe(null)
+		
 	})
 })
 
@@ -28,18 +34,18 @@ describe('immutable append tests', () => {
 	function testSize(MAX) {
 		it(`append ${pretty(MAX)} test`, () => {
 
-			var vec = CtorTrait.empty()
+			var vec = Cassowry.empty()
 
 			for (var i = 0; MAX > i; i++) {
 
-				vec = append(i, vec);
+				vec = Cassowry.append(i, vec);
 			}
 
 			var NOT_FOUND = {notFound: true}
 
 			for (var i = 0; MAX > i; i++) {
 
-				expect(nth(i, vec, NOT_FOUND)).toEqual(i)
+				expect(Cassowry.nth(i, vec, NOT_FOUND)).toEqual(i)
 			}
 
 		});
@@ -57,18 +63,18 @@ describe('mutable append tests', () => {
 	function testSize(MAX) {
 		it(`append ${pretty(MAX)} test`, () => {
 
-			var vec = CtorTrait.empty()
+			var vec = Cassowry.empty()
 
 			for (var i = 0; MAX > i; i++) {
 
-				vec = appendǃ(i, vec);
+				vec = Cassowry.appendǃ(i, vec);
 			}
 
 			var NOT_FOUND = {notFound: true}
 
 			for (var i = 0; MAX > i; i++) {
 
-				expect(nth(i, vec, NOT_FOUND)).toEqual(i)
+				expect(Cassowry.nth(i, vec, NOT_FOUND)).toEqual(i)
 			}
 
 		});
