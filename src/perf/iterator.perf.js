@@ -3,6 +3,10 @@ import mori from 'mori';
 import {AppendTrait} from '../append';
 import {iterator} from '../iterator';
 import {createClass} from '../test/classUtil';
+import {Cassowry} from '../cassowry/index'
+Cassowry.reduce = Cassowry.reduce.bind(Cassowry)
+Cassowry.append = Cassowry.append.bind(Cassowry)
+Cassowry.empty = Cassowry.empty.bind(Cassowry)
 
 var Vector = createClass(AppendTrait)
 
@@ -44,6 +48,14 @@ var list_1k = {
 		}
 		return list
 	})(),
+	cass: (function(){
+		var list = Cassowry.empty();
+
+		for (var i = 0; 1000 > i; i++) {
+			list = Cassowry.append(i, list)
+		}
+		return list
+	})()
 
 };
 
@@ -78,6 +90,11 @@ describe('', function() {
 		it.reduce(function(acc, value) {
 			value + value;
 		}, null);
+	});
+	it('rrbit:cassowry reduce speed', function() {
+		Cassowry.reduce(function(acc, value) {
+			value + value;
+		}, list_1k.cass, 0)
 	});
 
 	it.skip('native iteration speed', function() {

@@ -1,0 +1,39 @@
+import {Cassowry} from './index'
+
+import expect from 'jest-matchers'
+
+var DEPTHS = [
+	32, // 0 depth (leaf only) (32 ** 1)
+	1024, // 1 depth (default min depth) (32 ** 2)
+	32768, // 2 depth (32 ** 3)
+	1048576, // 3 depth (1M) (32 ** 4)
+	33554432, // 4 depth (33.5M) (32 ** 5)
+	1073741824 // 5 depth (1B) (32 ** 6) usually will cause out-of-memory by this point in current JS engines
+];
+
+describe('reduce tests', () => {
+	function testSize(SIZE) {
+		it('reduce over ' + SIZE, () => {
+			var vec = Cassowry.empty()
+
+			for (var i = 0; SIZE > i; i++) {
+
+				vec = Cassowry.append(i, vec);
+			}
+
+			var sum = Cassowry.reduce((sum, value) => {
+				expect(sum).toEqual(value);
+				return sum + 1
+			}, vec, 0)
+
+			expect(sum).toEqual(vec.length, 'sum was not as expected')
+		})
+
+	}
+
+	testSize(DEPTHS[0])
+	testSize(DEPTHS[1])
+	testSize(DEPTHS[2])
+	testSize(DEPTHS[3])
+	// testSize(DEPTHS[4])
+})

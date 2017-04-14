@@ -35,7 +35,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it.skip('mori vector append 1k', function() {
+	it('mori vector append 1k', function() {
 		// the original HAMT, highly optimized for append
 		var list = mori.vector();
 		for (var i = 0; 1000 > i; i++) {

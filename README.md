@@ -78,7 +78,7 @@ this limitation can be mitigated
 |rrbit 1k (Occulance enabled)              |    8012.65 op/s | push/append |
 |rrbit 1k (Builder mode)                   |   19410.27 op/s | push/append |
 |rrbit 1k (Cassowry: Occulance enabled)    |   22929.65 op/s | push/append |
-|rrbit 1k (Cassowry: Builder mode)         |   42168.29 op/s | push/append |
+|rrbit 1k (Cassowry: Builder mode)         |   69948.84 op/s | push/append |
 |native mutating push 1k(max possible)     |  203927.41 op/s | push/append |
 |--------------------------------------------------------------------------|
 |mori iteration speed                      |    18052.66 op/s| for of loop |
@@ -87,6 +87,7 @@ this limitation can be mitigated
 |native array iteration speed              |    17023.14 op/s| for of loop |
 |native forEach speed                      |    79403.02 op/s|     forEach |
 |rrbit iteration speed                     |   631643.88 op/s|      reduce |
+|rrbit cassowry reduce speed               |   100412.47 op/s|      reduce |
 |--------------------------------------------------------------------------|
 |native push 1k immutable with es6 spread  |      352.55 op/s| unshift/prepend |
 |mori prepend 1k                           |     2598.45 op/s| unshift/prepend |

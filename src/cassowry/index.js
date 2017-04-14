@@ -84,6 +84,13 @@ export const Cassowry = {
 	aLast(arr) {
 		return arr[Math.max(arr.length, 0) - 1]
 	},
+	
+	aReduceTo: function(fn, seed, array, len) {
+		for(var i = 0; len > i; i++) {
+			seed = fn(seed, array[i])
+		}
+		return seed;
+	},
 
 	// = tree math helpers =======================================================
 	
@@ -91,6 +98,7 @@ export const Cassowry = {
 	tailOffset(length) {
 		return (length >>> 5) << 5
 	},
+	//round to no greater than 32
 	tailIndex(index) {
 		return index & 31
 	},
@@ -324,6 +332,20 @@ export const Cassowry = {
 		}
 	},
 
+	treeReduceInner: function treeReduceInner(fn, seed, tree, depth) {
+		if (depth == 0)
+			return this.aReduceTo(fn, seed, tree, tree.length);
+
+		for (var i = 0, len = tree.length; len > i; i++) {
+			seed = this.treeReduceInner(fn, seed, tree[i], depth - 1)
+		}
+		return seed;
+	},
+	
+	treeReduce(fn, seed, tree, treeLen) {
+		return this.treeReduceInner(fn, seed, tree, this.depthFromLength(treeLen))
+	},
+
 
 // = main operations ====================================================
 
@@ -444,7 +466,7 @@ export const Cassowry = {
 		aft.push(value);
 
 		if ((newLength & 31)  === 0) {
-			vec.root = this.appendLeafOntoTree(aft, vec.root, (totalLength >>> 5) << 5);
+			vec.root = this.appendLeafOntoTreeǃ(aft, vec.root, (totalLength >>> 5) << 5);
 			vec.aft = null
 		}
 		vec.length = newLength;
@@ -472,6 +494,46 @@ export const Cassowry = {
 		vec.length = newLength;
 
 		return vec;
+	},
+
+	take(n, list) {},
+	drop(n, list) {},
+	reduce(fn, vec, seed) {
+		// iterate over pre first
+		var pre = vec.pre;
+		var len = vec.length - (pre && pre.length || 0);
+		var treeLen = (len >>> 5) << 5;
+		var tailLen = len & 31;
+		
+		while (pre) {
+			seed = fn(seed, pre.data)
+			pre = pre.link
+		}
+		
+		if (treeLen) {
+			seed = this.treeReduce(fn, seed, vec.root, treeLen)
+		}
+		
+		if (tailLen) {
+			seed = this.aReduceTo(fn, seed, vec.aft)
+		}
+		
+		return seed;
+
+	},
+	map(fn, list) {
+		var addIn = {
+			fn
+			, appendǃ: this.appendǃ
+			, appendLeafOntoTreeǃ: this.appendLeafOntoTreeǃ
+			, aLast: this.aLast
+			, addNodeǃ: this.addNodeǃ
+			, updateRootǃ: this.updateRootǃ
+			, step: function(list, value) {
+				return this.appendǃ(this.fn(value))
+			}
+		};
+		return this.reduce(addIn.step.bind(addIn), list, this.empty())
 	}
 
 
