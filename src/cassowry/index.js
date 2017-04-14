@@ -1,7 +1,8 @@
 
 
 export const Cassowry = {
-	 Vector(len) {
+	OCCULANCE_ENABLE: true,
+	Vector(len) {
 		 this.length = len || 0;
 		 this.root = null; // the tree structure
 		 this.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
@@ -58,6 +59,17 @@ export const Cassowry = {
 		}
 
 		result[len] = value;
+		return result;
+	},
+	aUnshift(value, arr) {
+		var len = arr.length;
+		var result = new Array(len + 1);
+
+		for (var i = 0; i < len; i++) {
+			result[i + 1] = arr[i]
+		}
+
+		result[0] = value;
 		return result;
 	},
 	aSet(index, value, arr) {
@@ -265,7 +277,52 @@ export const Cassowry = {
 		return root
 	},
 
-	prependLeafOntoTree(leaf, tree, treeLength) {},
+	prependLeafOntoTree(leaf, tree, treeLen) {
+		var d1
+			, d2
+			, d3
+			, d4
+			, n1
+			, n2
+			, n3
+			, n4
+
+		if (!tree || treeLen == 0) {
+			return [leaf]
+		}
+
+		if (treeLen <= 1024) { // depth 1
+			return tree.length == 32 ? [[leaf], tree] : this.aUnshift(leaf, tree);
+		}
+
+		if (treeLen <= 32768) { // depth 2
+			// there's probably a bug here. we should rebalance the tree
+			// to ensure all nodes are front packed...or adopt rrb
+			d1 = tree[0]
+
+			n1 = d1.length === 32 ? [leaf] : this.aUnshift(leaf, d1);
+
+			if (d1.length === 32) {
+				return tree.length == 32 ? [[n1], tree] : this.aUnshift(n1, tree);
+			}
+			return this.aSet(0, n1, tree) //update existing slot
+		}
+
+		if (treeLen <= 1048576) { // depth 3
+			this.IllegalHeight() // not quite supported yet
+			d2 = tree[0]
+			d1 = d2[0]
+
+			n1 = d1.length === 32 ? [leaf] : this.aUnshift(leaf, d1);
+			n2 = d1.length !== 32 ? this.aSet(0, n1, d2) : (d2.length === 32 ? [n1] : this.aUnshift(n1, d2));
+			
+			// return this.updateRoot(n2, tree, n2.length === 1 && d2.length == 32)
+			if (n2.length === 1 && d2.length == 32) { // append to end
+				return tree.length == 32 ? [[n2], tree] : this.aUnshift(n2, tree);
+			}
+			return this.aSet(0, n2, tree) //update existing slot
+		}
+	},
 
 
 // = main operations ====================================================
@@ -289,10 +346,11 @@ export const Cassowry = {
 		// index is in prefix linked list
 		if (i < preLen) {
 			for (var n = 0; n !== i; n++) {
-				list = list.link;
+				pre = pre.link;
 			}
-			return list.data
+			return pre.data
 		}
+		i -= preLen
 
 		var len = totalLength - preLen;
 		var treeLen = ((len ) >>> 5) << 5;
@@ -349,22 +407,21 @@ export const Cassowry = {
 		// 	return this.IllegalHeight();
 		// }
 
-		// shared past the offset length
-		//*
-		var aftDelta = vec.length & 31; //vec.length - 1 ???
-		if (aftDelta != aftLen) {
-			// another vector is sharing and invisibly mutated our aft
-			aft = vec.aft = aft.slice(0, aftDelta)
-		}
+		if (this.OCCULANCE_ENABLE) {
+			// shared past the offset length
+			var aftDelta = vec.length & 31; //vec.length - 1 ???
+			if (aftDelta != aftLen) {
+				// another vector is sharing and invisibly mutated our aft
+				aft = vec.aft = aft.slice(0, aftDelta)
+			}
 
-		if (!aft) {
-			aft = vec.aft = []
+			if (!aft) {
+				aft = vec.aft = []
+			}
+			aft.push(value);
+		} else {
+			vec.aft = this.aPush(value, aft || [])
 		}
-		aft.push(value);
-		/*/
-		vec.aft = this.aPush(value, aft || [])
-
-		//*/
 
 		if ((newLength & 31)  === 0) {
 			vec.root = this.appendLeafOntoTree(aft, vec.root, (totalLength >>> 5) << 5);
@@ -396,6 +453,8 @@ export const Cassowry = {
 	},
 	
 	prepend(value, list) {
+		//TODO: there a bug here when above 1024
+		// we cant just prepend a leaf to the front without also rebalancing the tree
 		var vec = this.clone(list)
 			, totalLength = vec.length
 			, newLength = totalLength + 1
@@ -404,7 +463,7 @@ export const Cassowry = {
 		var pre = this.addLL(value, vec.pre)
 		
 		if (pre.length == 32) {
-			vec.root = prependLeafOntoTree(this.llToArray(pre), vec.root, ((newLength - 32) >>> 5) << 5);
+			vec.root = this.prependLeafOntoTree(this.llToArray(pre), vec.root, ((newLength - 32) >>> 5) << 5);
 			vec.pre = null
 		} else {
 			vec.pre = pre;

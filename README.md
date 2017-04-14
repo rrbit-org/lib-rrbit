@@ -88,3 +88,9 @@ this limitation can be mitigated
 |native forEach speed                      |    79403.02 op/s|     forEach |
 |rrbit iteration speed                     |   631643.88 op/s|      reduce |
 |--------------------------------------------------------------------------|
+|native push 1k immutable with es6 spread  |      352.55 op/s| unshift/prepend |
+|mori prepend 1k                           |     2598.45 op/s| unshift/prepend |
+|immutable-js unshift 1k                   |      947.95 op/s| unshift/prepend |
+|native mutating unhift 1k(max possible)   |     8237.15 op/s| unshift/prepend |
+|rrbit (Cassowry: prepend) 1k              |    17420.03 op/s| unshift/prepend |
+|--------------------------------------------------------------------------|
