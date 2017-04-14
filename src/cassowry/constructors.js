@@ -20,7 +20,7 @@ function Vector(len) {
 	this.length = len;
 	this.root = null; // the tree structure
 	this.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
-	this.aft = [];    // transient tail of list, optimized for fast appends only  (native array)
+	this.aft = null;    // transient tail of list, optimized for fast appends only  (native array)
 }
 
 export const CtorTrait = {

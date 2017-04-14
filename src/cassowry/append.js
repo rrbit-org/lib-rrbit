@@ -10,9 +10,6 @@ function tailLength(total) {
 	return total % 32
 }
 
-function err(msg, obj) {
-	throw new Error(msg + ' ' + JSON.stringify(obj))
-}
 
 // = immutable array helpers =======================================================
 function aCopy(arr) {
@@ -59,8 +56,8 @@ function depthFromLength(len) {
 	if (len <= 1048576) return 3;
 	if (len <= 1048576) return 4;
 	if (len <= 1048576) return 5;
-	if (len <= 33554432) return 5;
-	if (len <= 1073741824) return 6;
+	if (len <= 33554432) return 6;
+	if (len <= 1073741824) return 7;
 	return IllegalHeight();
 }
 
