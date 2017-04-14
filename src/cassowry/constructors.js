@@ -21,8 +21,6 @@ function Vector(len) {
 	this.root = null; // the tree structure
 	this.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
 	this.aft = [];    // transient tail of list, optimized for fast appends only  (native array)
-	this.treeLength = 0;
-	this.treeDepth = 0;
 }
 
 export const CtorTrait = {
@@ -54,14 +52,11 @@ export const CtorTrait = {
 		return vec;
 	},
 
-	clone(rrb: Vector) {
-		var vec = new Vector(rrb.length);
-
-		vec.root = rrb.root;
-		vec.pre = rrb.pre;
-		vec.aft = rbb.aft;
-		vec.treeLength = rrb.treeLength;
-		vec.treeDepth = rrb.treeDepth;
+	clone(list: Vector) {
+		var vec = new Vector(list.length);
+		vec.root = list.root;
+		vec.pre = list.pre;
+		vec.aft = list.aft;
 
 		return vec;
 	}

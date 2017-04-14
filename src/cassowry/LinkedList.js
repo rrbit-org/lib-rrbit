@@ -5,8 +5,11 @@ function SinglyLinkedList(data, len, next) {
 	this.length = len;
 }
 
-export function of(value) {
-	return new SinglyLinkedList(value, 1, null)
+export function of(value, list) {
+	if (list) {
+		return new SinglyLinkedList(value, list.length + 1, list)
+	}
+	return new SinglyLinkedList(value, 1, list)
 }
 
 export function fromArray(arr) {
@@ -19,10 +22,6 @@ export function fromArray(arr) {
 }
 
 var proto = SinglyLinkedList.prototype
-
-proto.add = function(value) {
-	return new new SinglyLinkedList(value, this.length, this)
-};
 
 proto.nth = function(i, notFound) {
 	var list = this;
