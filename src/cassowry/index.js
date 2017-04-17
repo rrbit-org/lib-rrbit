@@ -1,13 +1,22 @@
+var iterator;
 
+function Vector(len) {
+	this.length = len || 0;
+	this.root = null; // the tree structure
+	this.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
+	this.aft = null;    // transient tail of list, optimized for fast appends only  (native array)
+}
+
+Vector.prototype[Symbol.iterator] = function() {
+	return iterator(this, 0, this.length);
+}
 
 export const Cassowry = {
 	OCCULANCE_ENABLE: true,
-	Vector(len) {
-		 this.length = len || 0;
-		 this.root = null; // the tree structure
-		 this.pre = null;  // transient front of list, optimized for fast prepends only(singly linked list)
-		 this.aft = null;    // transient tail of list, optimized for fast appends only  (native array)
-	 },
+	Vector: Vector,
+	factory() {
+		return new this.Vector();
+	},
 
 	// optimize for prepend performance
 	SinglyLinkedList(data, len, next) {
@@ -16,8 +25,8 @@ export const Cassowry = {
 		this.length = len;
 	},
 // enable v8 to optimize by hiding Errors from happy path
-	IllegalHeight() {
-		throw new Error('length cannot be greater than 1073741824')
+	IllegalRange(msg) {
+		throw new RangeError(msg || 'out of range')
 	},
 
 
@@ -40,7 +49,14 @@ export const Cassowry = {
 		}
 		return result;
 	},
-	
+	arrayToLL: function(arr) {
+		var list = null;
+		for (var i = arr.length - 1; i >= 0; i--) {
+			this.addLL(arr[i], list);
+		}
+		return list;
+	},
+
 	// = immutable array helpers =======================================================
 	aCopy(arr) {
 		var len = arr.length;
@@ -84,6 +100,14 @@ export const Cassowry = {
 	aLast(arr) {
 		return arr[Math.max(arr.length, 0) - 1]
 	},
+	aSlice(from, to, arr) {
+		var len = to - from;
+		var result = new Array(len);
+		for (var i = 0; len > i; i++) {
+			result[i] = arr[i + from]
+		}
+		return result;
+	},
 	
 	aReduceTo: function(fn, seed, array, len) {
 		for(var i = 0; len > i; i++) {
@@ -110,7 +134,7 @@ export const Cassowry = {
 		if (len <= 1048576) return 3;
 		if (len <= 33554432) return 4;
 		if (len <= 1073741824) return 5;
-		return this.IllegalHeight();
+		return this.IllegalRange('length cannot be greater than 1073741824');
 	},
 	
 	/*
@@ -304,6 +328,7 @@ export const Cassowry = {
 		}
 
 		if (treeLen <= 32768) { // depth 2
+			this.IllegalRange("can't prepend more than 1024...yet :(")
 			// there's probably a bug here. we should rebalance the tree
 			// to ensure all nodes are front packed...or adopt rrb
 			d1 = tree[0]
@@ -317,7 +342,6 @@ export const Cassowry = {
 		}
 
 		if (treeLen <= 1048576) { // depth 3
-			this.IllegalHeight() // not quite supported yet
 			d2 = tree[0]
 			d1 = d2[0]
 
@@ -425,10 +449,6 @@ export const Cassowry = {
 			, totalLength = vec.length
 			, newLength = totalLength + 1
 
-		// if ((newLength) === 1073741824) {
-		// 	return this.IllegalHeight();
-		// }
-
 		if (this.OCCULANCE_ENABLE) {
 			// shared past the offset length
 			var aftDelta = vec.length & 31; //vec.length - 1 ???
@@ -459,10 +479,6 @@ export const Cassowry = {
 			, totalLength = vec.length
 			, newLength = totalLength + 1
 
-		// if ((newLength) === 1073741824) {
-		// 	return this.IllegalHeight();
-		// }
-
 		aft.push(value);
 
 		if ((newLength & 31)  === 0) {
@@ -476,7 +492,10 @@ export const Cassowry = {
 	
 	prepend(value, list) {
 		//TODO: there a bug here when above 1024
-		// we cant just prepend a leaf to the front without also rebalancing the tree
+		// we cant just prepend a leaf to the front without either:
+		// * rebalancing the tree above depth 2(easiest to implement)
+		// * adopting and rrb style index cache on the node(most flexible)
+		// * adopting an entire tree index offset (likely cheapest)
 		var vec = this.clone(list)
 			, totalLength = vec.length
 			, newLength = totalLength + 1
@@ -496,14 +515,233 @@ export const Cassowry = {
 		return vec;
 	},
 
-	take(n, list) {},
-	drop(n, list) {},
+	take(n, list) {
+		var length = list.length
+			, pre = list.pre
+			, preLen = pre && pre.length || 0
+			, len = length - preLen
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
+			, vec = this.empty()
+			, d0, d1, d2, d3, d4, d5
+
+		vec.length = n;
+
+		if (n < 0) {
+			n += length;
+		}
+
+		if (n >= length) {
+			return list;
+		}
+
+		if (n < preLen) { //trim only pre
+			var vec = this.empty();
+			vec.aft = this.aSlice(0, n, this.llToArray(pre));
+			return vec;
+		}
+
+		if ((treeLen + preLen) < n) { // trim only tail
+			var _end = n & 31;
+			vec.aft = _end ? this.aSlice(0, _end, list.aft) : null;
+			vec.root = list.root;
+			vec.pre = pre;
+			return vec;
+		}
+
+		// - trim only tree -----
+
+		var xIt = (index, child, parent) => {
+			if (child.length) {
+				parent = this.aSlice(0, index, parent)
+				parent[index - 1] = child;
+				return parent
+			}
+			return this.aSlice(0, index - 1, parent)
+		}
+
+		var newRoot, newAft;
+		var depth = this.depthFromLength(treeLen);
+		var newDepth = this.depthFromLength(n - preLen);
+		switch(depth) {
+			case 5:
+				d5 = list.root
+				d4 = d5[(len >> 25) & 31]
+				d3 = d4[(len >> 20) & 31]
+				d2 = d3[(len >> 15) & 31]
+				d1 = d2[(len >> 10) & 31]
+				break;
+			case 4:
+				d4 = list.root
+				d3 = d4[(len >> 20) & 31]
+				d2 = d3[(len >> 15) & 31]
+				d1 = d2[(len >> 10) & 31]
+				break;
+			case 3:
+				d3 = list.root
+				d2 = d3[(len >> 15) & 31]
+				d1 = d2[(len >> 10) & 31]
+				break;
+			case 2:
+				d2 = list.root
+				d1 = d2[(len >> 10) & 31]
+				break;
+			case 1:
+				d1 = list.root
+				break;
+		}
+
+		switch(newDepth) {
+			case 5:
+				newAft = this.aSlice(0, 0 & 31, d1[(len >> 5) & 31])
+				d1 = this.aSlice(0, (((len >> 5) & 31) - 1), d1)
+				d2 = xIt((len >> 10) & 31, d1, d2)
+				d3 = xIt((len >> 15) & 31, d2, d3)
+				d4 = xIt((len >> 20) & 31, d3, d4)
+				d5 = xIt((len >> 25) & 31, d4, d5)
+				newRoot = d5
+				break;
+			case 4:
+				newAft = this.aSlice(0, 0 & 31, d1[(len >> 5) & 31])
+				d1 = this.aSlice(0, (((len >> 5) & 31) - 1), d1)
+				d2 = xIt((len >> 10) & 31, d1, d2)
+				d3 = xIt((len >> 15) & 31, d2, d3)
+				d4 = xIt((len >> 20) & 31, d3, d4)
+				newRoot = d4
+				break;
+			case 3:
+				newAft = this.aSlice(0, 0 & 31, d1[(len >> 5) & 31])
+				d1 = this.aSlice(0, (((len >> 5) & 31) - 1), d1)
+				d2 = xIt((len >> 10) & 31, d1, d2)
+				d3 = xIt((len >> 15) & 31, d2, d3)
+				newRoot = d3
+				break;
+			case 2:
+				newAft = this.aSlice(0, 0 & 31, d1[(len >> 5) & 31])
+				d1 = this.aSlice(0, (((len >> 5) & 31) - 1), d1)
+				d2 = xIt((len >> 10) & 31, d1, d2)
+				newRoot = d2
+				break;
+			case 1:
+				if ((n - preLen) < 32) {
+					newAft = this.aSlice(0, 0 & 31, d1[(len >> 5) & 31])
+					newRoot = null;
+				} else {
+					newAft = this.aSlice(0, 0 & 31, d1[(len >> 5) & 31])
+					newRoot = this.aSlice(0, (((len >> 5) & 31) - 1), d1)
+				}
+
+				break;
+		}
+
+		// it's weird to have a pre and aft but no root, so let's shift the pre up
+		if (preLen !== 0 && n <= 64) {
+			var merged = this.llToArray(pre).concat(newAft);
+			newRoot = [merged.slice(0, 32)];
+			newAft = merged.length > 32 ? merged.slice(32) : null
+		}
+		vec.aft = newAft;
+		vec.root = newRoot;
+		vec.pre = pre;
+		return vec;
+	},
+
+	drop(n, list) {
+
+		var length = list.length
+			, newLength = length - n
+			, pre = list.pre
+			, preLen = pre && pre.length || 0
+			, len = length - preLen
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
+			, vec = this.empty()
+			, d0, d1, d2, d3, d4, d5
+
+		if (n < 0) {
+			n += length;
+		}
+
+		if (n >= length) {
+			return vec;
+		}
+
+		vec.length = newLength
+
+		if (preLen > n) { // only need to drop tail
+			var _n = preLen - n;
+			while (pre.length != _n) {
+				pre = pre.link
+			}
+			vec.pre = pre;
+			vec.root = list.root;
+			vec.aft = list.aft;
+			return vec;
+		}
+
+		if (n > (preLen + treeLen)) { // all in tail
+			vec.aft = this.aSlice(tailLen - vec.length, tailLen, list.aft)
+			return vec;
+		}
+
+		// do tree trim
+
+		var newRoot, newPre;
+		var depth = this.depthFromLength(treeLen);
+		var start = n - preLen
+		var newTreeLen = treeLen - (start)
+		var newDepth = this.depthFromLength(newTreeLen);
+
+		switch(depth) {
+			case 5:
+				d5 = list.root
+				d4 = d5[(start >> 25) & 31]
+				d3 = d4[(start >> 20) & 31]
+				d2 = d3[(start >> 15) & 31]
+				d1 = d2[(start >> 10) & 31]
+			case 4:
+				d4 = list.root
+				d3 = d4[(start >> 20) & 31]
+				d2 = d3[(start >> 15) & 31]
+				d1 = d2[(start >> 10) & 31]
+			case 3:
+				d3 = list.root
+				d2 = d3[(start >> 15) & 31]
+				d1 = d2[(start >> 10) & 31]
+			case 2:
+				d3 = list.root
+				d1 = d2[(start >> 10) & 31]
+			case 1:
+				d1 = list.root
+				break;
+		}
+
+		switch(newDepth) {
+			case 5:
+			case 4:
+			case 3:
+			case 2:
+				this.IllegalRange('cannot drop when length is more than 1024...yet')
+			case 1:
+				// less than 1024, so logic is simple
+				newPre = this.aSlice(start & 31, 32, d1[(start >> 5) & 31])
+				d1 = this.aSlice((((start >> 5) & 31) + 1), 32, d1)
+				newRoot = d1.length ? d1 : null
+				break;
+		}
+
+		vec.pre = this.arrayToLL(newPre);
+		vec.root = newRoot;
+		vec.aft = list.aft;
+		return vec;
+	},
+
 	reduce(fn, vec, seed) {
 		// iterate over pre first
-		var pre = vec.pre;
-		var len = vec.length - (pre && pre.length || 0);
-		var treeLen = (len >>> 5) << 5;
-		var tailLen = len & 31;
+		var pre = vec.pre
+			, len = vec.length - (pre && pre.length || 0)
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
 		
 		while (pre) {
 			seed = fn(seed, pre.data)
@@ -521,6 +759,7 @@ export const Cassowry = {
 		return seed;
 
 	},
+
 	map(fn, list) {
 		var addIn = {
 			fn
