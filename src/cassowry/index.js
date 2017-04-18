@@ -355,12 +355,12 @@ export const Cassowry = {
 			case 1:
 				return this.aSlice(0, len & 31, root[(len >> 5) & 31])
 		}
+		return null;
 	},
 
-	trimTreeHeight(tree, oldLen, len) {
+	trimTreeHeight(tree, depth, len) {
 		//we can assume that old length > new length
-		var depth = this.depthFromLength(oldLen)
-			, newDepth = this.depthFromLength(len)
+		var newDepth = this.depthFromLength(len)
 
 		// since we have a tail, we never return a tree of 0 height. We would have to ensure we wrap it like:
 		// return newDepth == 0 ? [tree] : tree;
@@ -465,13 +465,20 @@ export const Cassowry = {
 	squash(list) {
 		var pre = list.pre
 			, preLen = (pre && pre.length) || 0
+			, root = list.root
+			, len = list.length
 
-		if (preLen > 0 && list.length <= 64) {
-			var merged = this.llToArray(pre).concat(list.aft);
+		if (preLen > 0 && len <= 64) {
+			var merged = this.llToArray(pre).concat(root && root[0] || []).concat(list.aft);
 			// root should never be height==0, since we have a tail
+
+			list.pre = null;
 			list.root = [merged.slice(0, 32)];
 			list.aft = merged.length > 32 ? merged.slice(32) : null
-			list.pre = null;
+		}
+		if (len < 32 && !list.aft) {
+			list.aft = (root && root[0] || []).slice(0, len)
+			list.root = null;
 		}
 		return list;
 	},
@@ -630,6 +637,10 @@ export const Cassowry = {
 
 		vec.length = n;
 
+		if (n == 0) {
+			return vec;
+		}
+
 		if (n < 0) {
 			n += length;
 		}
@@ -639,7 +650,6 @@ export const Cassowry = {
 		}
 
 		if (n < preLen) { //trim only pre
-			var vec = this.empty();
 			vec.aft = this.aSlice(0, n, this.llToArray(pre));
 			return vec;
 		}
@@ -656,13 +666,9 @@ export const Cassowry = {
 
 		var _newTreeLen = n - preLen;
 		var depth = this.depthFromLength(treeLen);
-		var newAft = this.trimTail(list.root, depth, _newTreeLen);
-		var newTreeLen = (_newTreeLen >>> 5) << 5;
-		// todo: is trimTreeHeight instead and avoid copy until append
-		var newRoot = this.trimTree(list.root, depth, newTreeLen);
 
-		vec.aft = newAft;
-		vec.root = newRoot;
+		vec.aft = this.trimTail(list.root, depth, _newTreeLen);
+		vec.root = n < 32 ? null : this.trimTreeHeight(list.root, depth, (_newTreeLen >>> 5) << 5);
 		vec.pre = pre;
 		return this.squash(vec)
 	},
@@ -803,7 +809,7 @@ export const Cassowry = {
 		}
 		
 		if (tailLen) {
-			seed = this.aReduceTo(fn, seed, vec.aft)
+			seed = this.aReduceTo(fn, seed, vec.aft, tailLen)
 		}
 		
 		return seed;

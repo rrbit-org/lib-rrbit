@@ -1,7 +1,7 @@
 import {Cassowry} from './index'
 import {DEPTHS, range} from './testUtils'
 
-// import expect from 'jest-matchers'
+import expect from 'jest-matchers'
 
 
 var size = [
@@ -25,10 +25,12 @@ describe('take tests', () => {
 
 			expect(vec.length).toEqual(take)
 
-			for (var i = 0; take > i; i++) {
+			var sum = Cassowry.reduce((sum, value) => {
+				expect(sum).toEqual(value);
+				return sum + 1
+			}, vec, 0)
 
-				expect(Cassowry.nth(i, vec, NOT_FOUND)).toEqual(i)
-			}
+			expect(sum).toEqual(vec.length, 'sum was not as expected')
 		})
 	}
 
