@@ -101,6 +101,14 @@ export const Cassowry = {
 		arr[index] = value;
 		return arr
 	},
+	aSetAsLast(index, value, src) {
+		if (!src)
+			return [value];
+
+		var result = this.aSlice(0, index, src);
+		result[index] = value;
+		return result
+	},
 	aLast(arr) {
 		return arr[Math.max(arr.length, 0) - 1]
 	},
@@ -150,67 +158,82 @@ export const Cassowry = {
 	 * of looping all the way down to child-most node, we use a switch case
 	 * specific to depth of tree.
 	 */
-	appendLeafOntoTree(leaf, tree, treeLen) {
+	appendLeafOntoTree(leaf, tree, i) {
 		var   d1
 			, d2
 			, d3
 			, d4
+			, d5
 			, n1
 			, n2
 			, n3
 			, n4
+			, n5
 
 
-		if (!tree || treeLen == 0) {
+		if (!tree) { // Math.pow(32, 1)
 			return [leaf]
 		}
 
-		// if (treeLen < 32) {
-		// 	return [leaf]
-		// }
-
-		if (treeLen <= 1024) { // Math.pow(32, 2)
-			return tree.length == 32 ? [tree, [leaf]] : this.aPush(leaf, tree);
+		if (i < 1024) { // Math.pow(32, 2)
+			
+			return this.aSetAsLast((i >>> 5) & 31, leaf, tree)
 		}
 
-		if (treeLen <= 32768) { // Math.pow(32, 3)
-			d1 = this.aLast(tree)
-
-			n1 = this.addNode(leaf, d1, true)
-			return this.updateRoot(n1, tree, d1.length === 32)
+		if (i < 32768) { // Math.pow(32, 3)
+			if (i == 1024) {
+				tree = [tree]
+			}
+			d2 = tree
+			d1 = d2[(i >>> 10) & 31]
+			n1 = this.aSetAsLast((i >>> 5 ) & 31, leaf, d1)
+			n2 = this.aSetAsLast((i >>> 10) & 31, n1, d2)
+			return n2;
 		}
 
-		if (treeLen <= 1048576) {// Math.pow(32, 4)
-			d2 = this.aLast(tree)
-			d1 = this.aLast(d2)
-
-			n1 = this.addNode(leaf, d1, true)
-			n2 = this.addNode(n1, d2, d1.length == 32)
-			return this.updateRoot(n2, tree, n2.length === 1 && d2.length == 32)
+		if (i < 1048576) {// Math.pow(32, 4)
+			if (i == 32768) {
+				tree = [tree]
+			}
+			d3 = tree
+			d2 = d3[(i >>> 15) & 31]
+			d1 = d2 && d2[(i >>> 10) & 31]
+			n1 = this.aSetAsLast((i >>> 5 ) & 31, leaf, d1)
+			n2 = this.aSetAsLast((i >>> 10) & 31, n1, d2)
+			n3 = this.aSetAsLast((i >>> 15) & 31, n2, d3)
+			return n3;
 		}
 
-		if (treeLen <= 33554432) {// Math.pow(32, 5)
-			d3 = this.aLast(tree)
-			d2 = this.aLast(d3)
-			d1 = this.aLast(d2)
-
-			n1 = this.addNode(leaf, d1, true)
-			n2 = this.addNode(n1, d2, d1.length == 32)
-			n3 = this.addNode(n2, d3, n2.length === 1 && d2.length == 32)
-			return this.updateRoot(n3, tree, n3.length == 1 && d3.length == 32)
+		if (i < 33554432) {// Math.pow(32, 5)
+			if (i == 1048576) {
+				tree = [tree]
+			}
+			d4 = tree
+			d3 = d4[(i >>> 20) & 31]
+			d2 = d3 && d3[(i >>> 15) & 31]
+			d1 = d2 && d2[(i >>> 10) & 31]
+			n1 = this.aSetAsLast((i >>> 5 ) & 31, leaf, d1)
+			n2 = this.aSetAsLast((i >>> 10) & 31, n1, d2)
+			n3 = this.aSetAsLast((i >>> 15) & 31, n2, d3)
+			n4 = this.aSetAsLast((i >>> 20) & 31, n2, d4)
+			return n4;
 		}
 
-		if (treeLen <= 1073741824) { // Math.pow(32, 6)
-			d4 = this.aLast(tree)
-			d3 = this.aLast(d4)
-			d2 = this.aLast(d3)
-			d1 = this.aLast(d2)
-
-			n1 = this.addNode(leaf, d1, true)
-			n2 = this.addNode(n1, d2, d1.length === 32)
-			n3 = this.addNode(n2, d3, n2.length === 1 && d2.length === 32)
-			n4 = this.addNode(n3, d4, n3.length === 1 && d3.length === 32)
-			return this.updateRoot(n4, tree, n4.length == 1 && d4.length == 32)
+		if (i < 1073741824) { // Math.pow(32, 6)
+			if (i == 33554432) {
+				tree = [tree]
+			}
+			d5 = tree
+			d4 = d5[(i >>> 20) & 31]
+			d3 = d4 && d4[(i >>> 20) & 31]
+			d2 = d3 && d3[(i >>> 15) & 31]
+			d1 = d2 && d2[(i >>> 10) & 31]
+			n1 = this.aSetAsLast((i >>> 5 ) & 31, leaf, d1)
+			n2 = this.aSetAsLast((i >>> 10) & 31, n1, d2)
+			n3 = this.aSetAsLast((i >>> 15) & 31, n2, d3)
+			n4 = this.aSetAsLast((i >>> 20) & 31, n2, d4)
+			n5 = this.aSetAsLast((i >>> 25) & 31, n2, d5)
+			return n5;
 		}
 	},
 	addNode(child, parent, shouldAppend) {
@@ -541,7 +564,7 @@ export const Cassowry = {
 		}
 
 		if ((newLength & 31)  === 0) {
-			vec.root = this.appendLeafOntoTree(aft, vec.root, (totalLength >>> 5) << 5);
+			vec.root = this.appendLeafOntoTree(aft, vec.root, ((newLength - 32) >>> 5) << 5);
 			vec.aft = null
 		}
 		vec.length = newLength;
