@@ -90,8 +90,13 @@ this limitation can be mitigated
 |rrbit cassowry reduce speed               |   100412.47 op/s|      reduce |
 |--------------------------------------------------------------------------|
 |native push 1k immutable with es6 spread  |      352.55 op/s| unshift/prepend |
-|mori prepend 1k                           |     2598.45 op/s| unshift/prepend |
 |immutable-js unshift 1k                   |      947.95 op/s| unshift/prepend |
-|native mutating unhift 1k(max possible)   |     8237.15 op/s| unshift/prepend |
+|mori prepend 1k                           |     2598.45 op/s| unshift/prepend |
+|native mutating unshift 1k                |     8237.15 op/s| unshift/prepend |
 |rrbit (Cassowry: prepend) 1k              |    17420.03 op/s| unshift/prepend |
 |--------------------------------------------------------------------------|
+|native slice half                         |    28064.72 op/s | take/slice |
+|rrbit take                                |  1361882.81 op/s | take/slice |
+|rrbit (Cassowry) take                     |  1785120.70 op/s | take/slice |
+|immutable-js take half                    |  2100578.67 op/s | take/slice |
+|mori take half                            |  2396771.15 op/s | take/slice |

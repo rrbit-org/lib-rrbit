@@ -13,7 +13,7 @@ var Vector = createClass(PrependTrait)
 
 describe('append/push comparisons', function() {
 
-	it('immutable-js append 1k', function() {
+	it('immutable-js prepend 1k', function() {
 		var list = Immutable.List();
 		for (var i = 0; 1024 > i; i++) {
 			list = list.unshift(i)
@@ -27,7 +27,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('proto 1k', function() {
+	it('eagle prepend 1k', function() {
 		var list = Vector.empty();
 
 		for (var i = 0; 1024 > i; i++) {
