@@ -1,25 +1,13 @@
 import {Cassowry} from './index'
+import {iterator} from './iterator'
+import {DEPTHS, range} from './testUtils'
 
 import expect from 'jest-matchers'
-
-var DEPTHS = [
-	32, // 0 depth (leaf only) (32 ** 1)
-	1024, // 1 depth (default min depth) (32 ** 2)
-	32768, // 2 depth (32 ** 3)
-	1048576, // 3 depth (1M) (32 ** 4)
-	33554432, // 4 depth (33.5M) (32 ** 5)
-	1073741824 // 5 depth (1B) (32 ** 6) usually will cause out-of-memory by this point in current JS engines
-];
 
 describe('reduce tests', () => {
 	function testSize(SIZE) {
 		it('reduce over ' + SIZE, () => {
-			var vec = Cassowry.empty()
-
-			for (var i = 0; SIZE > i; i++) {
-
-				vec = Cassowry.append(i, vec);
-			}
+			var vec = range(SIZE)
 
 			var sum = Cassowry.reduce((sum, value) => {
 				expect(sum).toEqual(value);
@@ -36,4 +24,25 @@ describe('reduce tests', () => {
 	testSize(DEPTHS[2])
 	testSize(DEPTHS[3])
 	// testSize(DEPTHS[4])
+})
+
+describe.skip('forward iteration', function() {
+
+	function testIterationSize(size) {
+		it(`can iterate in order - ${size}`, function() {
+			var vec = range(SIZE)
+
+			var i = 0;
+			for (var value of vec) {
+				expect(value).toEqual(i++)
+			}
+
+			expect(i).toEqual(size - 1)
+		})
+	}
+
+	testIterationSize(DEPTHS[0]);
+	testIterationSize(DEPTHS[1]);
+	// testIterationSize(DEPTHS[2]);
+	// testIterationSize(DEPTHS[3]);
 })

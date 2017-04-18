@@ -236,19 +236,6 @@ export const Cassowry = {
 			return n5;
 		}
 	},
-	addNode(child, parent, shouldAppend) {
-		if (shouldAppend) {
-			return parent.length === 32 ? [child] : this.aPush(child, parent);
-		}
-		return this.aSet(parent.length - 1, child, parent)
-	},
-
-	updateRoot(child, root, expand) {
-		if (expand) {
-			return root.length == 32 ? [root, [child]] : this.aPush(child, root);
-		}
-		return this.aSet(root.length - 1, child, root)
-	},
 	appendLeafOntoTreeǃ(leaf, tree, i) {
 		var d1, d2, d3, d4, d5;
 
@@ -457,18 +444,36 @@ export const Cassowry = {
 		}
 	},
 
-	treeReduceInner: function treeReduceInner(fn, seed, tree, depth) {
+	treeReduceInner: function treeReduceInner(fn, seed, tree, depth, totalLen, isLast) {
 		if (depth == 0)
-			return this.aReduceTo(fn, seed, tree, tree.length);
+			return this.aReduceTo(fn, seed, tree, isLast ? ((totalLen & 31) + 1) : tree.length);
 
-		for (var i = 0, len = tree.length; len > i; i++) {
-			seed = this.treeReduceInner(fn, seed, tree[i], depth - 1)
+		var len = isLast ? (((totalLen >>> (depth * 5)) & 31) + 1) : tree.length
+
+		for (var i = 0; len > i; i++) {
+			seed = this.treeReduceInner(fn, seed, tree[i], depth - 1, totalLen, isLast && len == i)
 		}
+
 		return seed;
 	},
 	
 	treeReduce(fn, seed, tree, treeLen) {
-		return this.treeReduceInner(fn, seed, tree, this.depthFromLength(treeLen))
+		return this.treeReduceInner(fn, seed, tree, this.depthFromLength(treeLen), treeLen - 1, true)
+	},
+
+	// it's weird to have a pre and aft but no root, so let's shift the pre up
+	squash(list) {
+		var pre = list.pre
+			, preLen = (pre && pre.length) || 0
+
+		if (preLen > 0 && list.length <= 64) {
+			var merged = this.llToArray(pre).concat(list.aft);
+			// root should never be height==0, since we have a tail
+			list.root = [merged.slice(0, 32)];
+			list.aft = merged.length > 32 ? merged.slice(32) : null
+			list.pre = null;
+		}
+		return list;
 	},
 
 
@@ -649,15 +654,6 @@ export const Cassowry = {
 
 		// - trim only tree -----
 
-		var xIt = (index, child, parent) => {
-			if (child.length) {
-				parent = this.aSlice(0, index, parent)
-				parent[index - 1] = child;
-				return parent
-			}
-			return this.aSlice(0, index - 1, parent)
-		}
-
 		var _newTreeLen = n - preLen;
 		var depth = this.depthFromLength(treeLen);
 		var newAft = this.trimTail(list.root, depth, _newTreeLen);
@@ -665,17 +661,10 @@ export const Cassowry = {
 		// todo: is trimTreeHeight instead and avoid copy until append
 		var newRoot = this.trimTree(list.root, depth, newTreeLen);
 
-		// it's weird to have a pre and aft but no root, so let's shift the pre up
-		if (preLen !== 0 && n <= 64) {
-			var merged = this.llToArray(pre).concat(newAft);
-			// root should never be height==0, since we have a tail
-			newRoot = [merged.slice(0, 32)];
-			newAft = merged.length > 32 ? merged.slice(32) : null
-		}
 		vec.aft = newAft;
 		vec.root = newRoot;
 		vec.pre = pre;
-		return vec;
+		return this.squash(vec)
 	},
 
 	drop(n, list) {
@@ -753,7 +742,8 @@ export const Cassowry = {
 			case 4:
 			case 3:
 			case 2:
-				this.IllegalRange('cannot drop when length is more than 1024...yet')
+				this.IllegalRange('cannot drop when length is more than 1024...yet');
+				break;
 			case 1:
 				// less than 1024, so logic is simple
 				newPre = this.aSlice(start & 31, 32, d1[(start >> 5) & 31])
@@ -766,6 +756,34 @@ export const Cassowry = {
 		vec.root = newRoot;
 		vec.aft = list.aft;
 		return vec;
+	},
+
+	appendAll(left, right) {
+		var vec = this.clone(left)
+			, leftPre = left.pre
+			, leftPreLength = leftPre.length || 0
+			, leftLength = left.length
+			, leftTreeLength = ((leftLength - leftPreLength) >>> 5) << 5
+			// , leftDepth = this.depthFromLength(leftTreeLength)
+			// , rightPre = right.pre
+			// , rightPreLength = rightPre.length || 0
+			// , rightLength = right.length
+			// , rightTreeLength = ((rightLength - rightPreLength) >>> 5) << 5
+			// , rightDepth = this.depthFromLength(rightTreeLength)
+
+		vec.length = leftLength;
+		vec.pre = left.pre;
+		vec.aft = left.aft;
+		// clone right-most edge all the way down, so we can do fast append
+		vec.root = left.root ? this.trimTree(left.root, this.depthFromLength(leftTreeLength), leftTreeLength) : null;
+
+
+
+		vec = this.reduce(function addToLeft(list, value) {
+			return this.appendǃ(value, list)
+		}.bind(this), right, vec);
+
+		return this.squash(vec);
 	},
 
 	reduce(fn, vec, seed) {
@@ -798,7 +816,7 @@ export const Cassowry = {
 			, appendǃ: this.appendǃ
 			, appendLeafOntoTreeǃ: this.appendLeafOntoTreeǃ
 			, step: function(list, value) {
-				return this.appendǃ(this.fn(value))
+				return this.appendǃ(this.fn(value), list)
 			}
 		};
 		return this.reduce(addIn.step.bind(addIn), list, this.empty())
