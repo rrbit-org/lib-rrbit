@@ -11,7 +11,7 @@ Cassowry.prepend = Cassowry.prepend.bind(Cassowry)
 var Vector = createClass(PrependTrait)
 
 
-describe('append/push comparisons', function() {
+describe('prepend/unshift comparisons', function() {
 
 	it('immutable-js prepend 1k', function() {
 		var list = Immutable.List();
