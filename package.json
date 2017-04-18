@@ -35,7 +35,7 @@
   "scripts": {
     "jest": "./node_modules/.bin/jest src/cassowry",
     "test": "./node_modules/.bin/mocha --compilers js:babel-core/register src/eagle/test/*.test.js",
-    "test:only": "./node_modules/.bin/mocha --compilers js:babel-core/register ",
+    "test:only": "./node_modules/.bin/mocha --compilers js:babel-core/register --no-timeouts",
     "bench:push": "node project/benchEagle.js",
     "bench:pre": "node project/benchPrepend.js",
     "bench:iter": "node project/benchIterator.js",

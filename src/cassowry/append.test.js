@@ -82,9 +82,9 @@ describe('mutable append tests', () => {
 
 	testSize(DEPTHS[0])
 	testSize(DEPTHS[1])
-	testSize(DEPTHS[2])
-	testSize(DEPTHS[3])
-	// testSize(DEPTHS[4])
-	// testSize(DEPTHS[5])
+	testSize(DEPTHS[2]) // about 500ms
+	testSize(DEPTHS[3]) // about 13s
+	// testSize(DEPTHS[4]) // about 7m
+	// testSize(DEPTHS[5]) // out of memory
 })
 

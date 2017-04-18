@@ -51,7 +51,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('proto 1k', function() {
+	it('eagle 1k', function() {
 		var list = Vector.empty();
 
 		for (var i = 0; 1000 > i; i++) {
@@ -59,7 +59,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('proto 1k ǃ', function() {
+	it('eagle 1k ǃ', function() {
 		var list = Vector.empty();
 
 		for (var i = 0; 1000 > i; i++) {
