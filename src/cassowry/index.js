@@ -588,7 +588,12 @@ export const Cassowry = {
 		var aft = vec.aft || (vec.aft = [])
 			, totalLength = vec.length
 			, newLength = totalLength + 1
-
+		// 	, preLen = (vec.pre && vec.pre.length) || 0
+		// 	, tailLen = (totalLength - preLen) & 31
+		// if (aft.length !== tailLen) {
+		// 	wtf?
+		// }
+		
 		aft.push(value);
 
 		if ((newLength & 31)  === 0) {

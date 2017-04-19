@@ -5,7 +5,40 @@ import {DropTrait} from './drop';
 import {TakeTrait} from './take';
 import {PrependTrait} from './prepend';
 import {UpdateTrait} from './update';
-import {iterator, reverseIterator} from './iterator';
+import {iterator, reverseIterator, reduce} from './iterator';
+import {Cassowry} from './cassowry/index'
+
+
+/**
+ *
+ * @param {function():Vector} factory
+ */
+export function setupCassowry(factory) {
+	var lib = {
+		...Cassowry,
+		factory: factory || Cassowry.factory
+	};
+
+	var VectorApi = [
+		'nth',
+		'drop',
+		'take',
+		'update',
+		'prepend',
+		'append',
+		'appendǃ',
+		'appendAll',
+		'empty',
+		'reduce'
+		// 'iterator',
+		// 'reverseIterator'
+	].reduce((api, name) => {
+		api[name] = lib[name].bind(lib);
+		return api;
+	}, {});
+
+	return VectorApi;
+}
 
 /**
  * @type VectorApi
@@ -51,12 +84,16 @@ export function setup(factory) {
 		'appendǃ',
 		'appendAll',
 		'empty',
-		'iterator',
-		'reverseIterator'
 	].reduce((api, name) => {
 		api[name] = lib[name].bind(lib);
 		return api;
 	}, {});
+
+	Object.assign(VectorApi, {
+		reduce,
+		iterator,
+		reverseIterator
+	})
 
 	return VectorApi;
 }

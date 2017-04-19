@@ -52,12 +52,9 @@ export var PrependTrait = {
 
 	_prependFrontNewBlock(elem, list) {
 
-		var currentDepth = list.focusDepth
-		if (currentDepth == 1)
-			currentDepth += 1
+		var currentDepth = Math.max(list.focusDepth, 2)
 
-		if (currentDepth == 1)
-			currentDepth = 2;
+
 		var display = list['display' + (currentDepth - 1)];
 
 		while (display != null && display.length == 33) { /* the insertion depth has not been found */
@@ -87,7 +84,7 @@ export var PrependTrait = {
 					var newSizes = i >= _focusDepth ? this.makeTransientSizes(display[displayLen], 1) : null
 
 					var newDisplay = new Array(display.length)
-					arraycopy(display, 1, newDisplay, 1, displayLen - 1)
+					this.arraycopy(display, 1, newDisplay, 1, displayLen - 1)
 					if (i >= _focusDepth)
 						newDisplay[displayLen] = newSizes
 

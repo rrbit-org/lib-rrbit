@@ -36,6 +36,10 @@ export function reverseIterator(start, end, rrb) {
 	return new ReverseRangedIterator(start, end, rrb);
 }
 
+export function reduce(fn, seed, rrb) {
+	return new RangedIterator(0, rrb.length, rrb).reduce(fn, seed)
+}
+
 
 function RangedIterator(startIndex, endIndex, rrb) {
 	// do no validation of inputs here, keep it fast. use a helper/wrapper if needed
