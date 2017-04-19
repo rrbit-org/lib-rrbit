@@ -11,6 +11,34 @@ Vector.prototype[Symbol.iterator] = function() {
 	return iterator(this, 0, this.length);
 }
 
+export function setup(factory) {
+	var lib = {
+		...Cassowry,
+		factory: factory || Cassowry.factory
+	};
+
+	var VectorApi = [
+		'nth',
+		'drop',
+		'take',
+		'update',
+		'prepend',
+		'append',
+		'appendǃ',
+		'appendAll',
+		'empty',
+		'reduce',
+		'find'
+		// 'iterator',
+		// 'reverseIterator'
+	].reduce((api, name) => {
+		api[name] = lib[name].bind(lib);
+		return api;
+	}, {});
+
+	return VectorApi;
+}
+
 export const Cassowry = {
 	OCCULANCE_ENABLE: true,
 	Vector: Vector,

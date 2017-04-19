@@ -6,40 +6,7 @@ import {TakeTrait} from './take';
 import {PrependTrait} from './prepend';
 import {UpdateTrait} from './update';
 import {iterator, reverseIterator, reduce} from './iterator';
-import {Cassowry} from './cassowry/index'
 
-
-/**
- *
- * @param {function():Vector} factory
- */
-export function setupCassowry(factory) {
-	var lib = {
-		...Cassowry,
-		factory: factory || Cassowry.factory
-	};
-
-	var VectorApi = [
-		'nth',
-		'drop',
-		'take',
-		'update',
-		'prepend',
-		'append',
-		'appendǃ',
-		'appendAll',
-		'empty',
-		'reduce',
-		'find'
-		// 'iterator',
-		// 'reverseIterator'
-	].reduce((api, name) => {
-		api[name] = lib[name].bind(lib);
-		return api;
-	}, {});
-
-	return VectorApi;
-}
 
 /**
  * @type VectorApi
