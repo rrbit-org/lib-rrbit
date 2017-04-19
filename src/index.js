@@ -29,7 +29,8 @@ export function setupCassowry(factory) {
 		'appendǃ',
 		'appendAll',
 		'empty',
-		'reduce'
+		'reduce',
+		'find'
 		// 'iterator',
 		// 'reverseIterator'
 	].reduce((api, name) => {

@@ -532,7 +532,7 @@ export const Cassowry = {
 		return this.IllegalRange('range cannot be higher than 1,073,741,824')
 	},
 	empty() {
-		return new this.Vector(0);
+		return this.factory();
 	},
 	of(...values) {
 		if (values.length > 32) {
@@ -544,7 +544,8 @@ export const Cassowry = {
 	},
 
 	clone(list){
-		var vec = new this.Vector(list.length);
+		var vec = this.factory();
+		vec.length = list.length;
 		vec.root = list.root;
 		vec.pre = list.pre;
 		vec.aft = list.aft;
@@ -628,6 +629,10 @@ export const Cassowry = {
 		vec.length = newLength;
 
 		return vec;
+	},
+	
+	update(i, value, list) {
+		throw new Error('operation not supported...yet')
 	},
 
 	take(n, list) {
@@ -797,10 +802,10 @@ export const Cassowry = {
 		return this.squash(vec);
 	},
 
-	reduce(fn, vec, seed) {
+	reduce(fn, seed, list) {
 		// iterate over pre first
-		var pre = vec.pre
-			, len = vec.length - (pre && pre.length || 0)
+		var pre = list.pre
+			, len = list.length - (pre && pre.length || 0)
 			, treeLen = (len >>> 5) << 5
 			, tailLen = len & 31
 		
@@ -810,28 +815,39 @@ export const Cassowry = {
 		}
 		
 		if (treeLen) {
-			seed = this.treeReduce(fn, seed, vec.root, treeLen)
+			seed = this.treeReduce(fn, seed, list.root, treeLen)
 		}
 		
 		if (tailLen) {
-			seed = this.aReduceTo(fn, seed, vec.aft, tailLen)
+			seed = this.aReduceTo(fn, seed, list.aft, tailLen)
 		}
 		
 		return seed;
 
 	},
+	reduceRight(fn, seed, list) {
+		throw new Error('operation not supported...yet')
+	},
 
-	map(fn, list) {
-		var addIn = {
-			fn
-			, appendǃ: this.appendǃ
-			, appendLeafOntoTreeǃ: this.appendLeafOntoTreeǃ
-			, step: function(list, value) {
-				return this.appendǃ(this.fn(value), list)
-			}
-		};
-		return this.reduce(addIn.step.bind(addIn), list, this.empty())
+	find(predicate, list) {
+
+		throw new Error('operation not supported...yet')
+		return {
+			index: -1,
+			value: null
+		}
 	}
+	// map(fn, list) {
+	// 	var addIn = {
+	// 		fn
+	// 		, appendǃ: this.appendǃ
+	// 		, appendLeafOntoTreeǃ: this.appendLeafOntoTreeǃ
+	// 		, step: function(list, value) {
+	// 			return this.appendǃ(this.fn(value), list)
+	// 		}
+	// 	};
+	// 	return this.reduce(addIn.step.bind(addIn), list, this.empty())
+	// }
 
 
 };
