@@ -3,6 +3,7 @@ import mori from 'mori';
 import {AppendTrait} from '../append';
 import {DropTrait} from '../drop';
 import {createClass} from '../test/classUtil';
+import {Cassowry} from '../cassowry/index'
 
 var Vector = createClass(AppendTrait, DropTrait)
 
@@ -33,6 +34,13 @@ var list_1k = {
 			list = list.append(i, list)
 		}
 		return list
+	})(),
+	cass: (function() {
+		var vec = Cassowry.empty()
+		for (var i = 0; 1000 > i; i++) {
+			vec = Cassowry.appendǃ(i, vec)
+		}
+		return vec
 	})(),
 	native: (function(){
 		var list = []
