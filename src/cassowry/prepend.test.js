@@ -20,7 +20,7 @@ describe('initialization tests', () => {
 
 describe('immutable prepend tests', () => {
 	function testSize(MAX) {
-		it(`append ${pretty(MAX)} test`, () => {
+		it(`prepend ${pretty(MAX)} test`, () => {
 
 			var vec = Cassowry.empty()
 
@@ -40,9 +40,9 @@ describe('immutable prepend tests', () => {
 		});
 	}
 
-	// testSize(DEPTHS[0])
-	// testSize(DEPTHS[1])
-	testSize(DEPTHS[2])
+	testSize(DEPTHS[0])
+	testSize(DEPTHS[1])
+	// testSize(DEPTHS[2])
 	// testSize(DEPTHS[3])
 	// testSize(DEPTHS[4])
 	// testSize(DEPTHS[5])
