@@ -410,17 +410,19 @@ export const Cassowry = {
 	},
 
 	trimTail(root, depth, len) {
+		// pick the new tail/aft from a leaf in the tree
+		// we don't actually trim since we can limit with length
 		switch (depth) {
 			case 5:
-				return this.aSlice(0, len & 31, root[(len >> 25) & 31][(len >> 20) & 31][(len >> 15) & 31][(len >> 10) & 31][(len >> 5) & 31])
+				return root[(len >> 25) & 31][(len >> 20) & 31][(len >> 15) & 31][(len >> 10) & 31][(len >> 5) & 31]
 			case 4:
-				return this.aSlice(0, len & 31, root[(len >> 20) & 31][(len >> 15) & 31][(len >> 10) & 31][(len >> 5) & 31])
+				return root[(len >> 20) & 31][(len >> 15) & 31][(len >> 10) & 31][(len >> 5) & 31]
 			case 3:
-				return this.aSlice(0, len & 31, root[(len >> 15) & 31][(len >> 10) & 31][(len >> 5) & 31])
+				return root[(len >> 15) & 31][(len >> 10) & 31][(len >> 5) & 31]
 			case 2:
-				return this.aSlice(0, len & 31, root[(len >> 10) & 31][(len >> 5) & 31])
+				return root[(len >> 10) & 31][(len >> 5) & 31]
 			case 1:
-				return this.aSlice(0, len & 31, root[(len >> 5) & 31])
+				return root[(len >> 5) & 31]
 		}
 		return null;
 	},
@@ -726,9 +728,9 @@ export const Cassowry = {
 		if (this.OCCULANCE_ENABLE) {
 			// shared past the offset length
 			var aftDelta = vec.length & 31; //vec.length - 1 ???
+			// another vector is sharing and invisibly mutated our aft
 			if (aftDelta != aftLen) {
-				// another vector is sharing and invisibly mutated our aft
-				aft = vec.aft = aft.slice(0, aftDelta)
+				aft = vec.aft = this.aSlice(0, aftDelta, aft)
 			}
 
 			if (!aft) {
@@ -840,14 +842,19 @@ export const Cassowry = {
 		var _newTreeLen = n - preLen;
 		var depth = this.depthFromLength(treeLen);
 
-		if (n < 32) {
+		if (_newTreeLen < 32) {
 			vec.aft = this.trimTail(list.root, depth, _newTreeLen);
 		} else {
+			vec.aft = (_newTreeLen & 31) == 0 ? null : this.trimTail(list.root, depth, _newTreeLen);
 			vec.root =  this.trimTreeHeight(list.root, depth, (_newTreeLen >>> 5) << 5);
 		}
 
 		vec.pre = pre;
-		return this.squash(vec)
+		if (preLen > 0 && n <= 64) {
+			return this.squash(vec)
+		}
+
+		return vec;
 	},
 
 	drop(n, list) {

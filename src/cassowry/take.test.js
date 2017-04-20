@@ -14,7 +14,7 @@ var size = [
 ]
 
 
-describe('take tests', () => {
+describe.skip('take tests', () => {
 
 	function testSize(list, take) {
 
@@ -38,4 +38,20 @@ describe('take tests', () => {
 	testSize(size[1], size[1].length / 2)
 	testSize(size[2], size[2].length / 2)
 	testSize(size[3], size[3].length / 2)
+})
+
+
+describe('take + append', () => {
+	it('1000 > 500', () => {
+		var vec = range(1000);
+		var vec2 = Cassowry.take(500, vec);
+
+		expect(vec2.length).toEqual(500);
+
+		for (var i = 0; 500 > i; i++) {
+			var value = Cassowry.nth(i, vec2, 'not found')
+			expect(value).toEqual(i)
+		}
+	})
+
 })
