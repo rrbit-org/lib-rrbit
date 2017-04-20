@@ -1,5 +1,6 @@
 var iterator;
 
+// the default base class, mostly here to make testing easier
 function Vector(len) {
 	this.length = len || 0;
 	this.root = null; // the tree structure
@@ -10,6 +11,12 @@ function Vector(len) {
 Vector.prototype[Symbol.iterator] = function() {
 	return iterator(this, 0, this.length);
 }
+
+function CancelToken(value, index) {
+	this.value = value;
+	this.index = index;
+}
+
 
 export function setup(factory) {
 	var lib = {
@@ -41,9 +48,27 @@ export function setup(factory) {
 
 export const Cassowry = {
 	OCCULANCE_ENABLE: true,
-	Vector: Vector,
+	Vector,
+	CancelToken,
+	isCancelled(value) {
+		return value instanceof this.CancelToken
+	},
+	done(value, index, depth) {
+		return new this.CancelToken(value, index, depth)
+	},
 	factory() {
 		return new this.Vector();
+	},
+	clone(list){
+		var vec = this.factory();
+		vec.length = list.length;
+		vec.root = list.root;
+		vec.pre = list.pre;
+		vec.aft = list.aft;
+		if (list.originOffset)
+			vec.originOffset = list.originOffset
+
+		return vec;
 	},
 
 	// optimize for prepend performance
@@ -148,13 +173,6 @@ export const Cassowry = {
 		}
 		return result;
 	},
-	
-	aReduceTo: function(fn, seed, array, len) {
-		for(var i = 0; len > i; i++) {
-			seed = fn(seed, array[i])
-		}
-		return seed;
-	},
 
 	// = tree math helpers =======================================================
 	
@@ -167,19 +185,40 @@ export const Cassowry = {
 		return index & 31
 	},
 	
-	depthFromLength(len) {
+	depthFromLength: (function() {
 		// faster than doing:
-		// Math.floor(Math.log(len) / Math.log(32)) | 0
-		// Math.log(len) / Math.log(32) >> 0
+		// Math.floor(Math.log(len) / Math.log(32))
 
-		// if (len < 32) return 0; // we'll never actually check for this height due to tail optimization
-		if (len <= 1024) return 1;
-		if (len <= 32768) return 2;
-		if (len <= 1048576) return 3;
-		if (len <= 33554432) return 4;
-		if (len <= 1073741824) return 5;
-		return this.IllegalRange('length cannot be greater than 1073741824');
-	},
+		// return function(len) {
+		// 	return ((31 - (31 - ((Math.log(len >>> 0) * Math.LOG2E) |0))) / 5) | 0
+		// }
+
+		// if (typeof Math.clz32 === 'function' && !isNode) {
+		// 	//for some reason this works terrible in node, but great in browsers
+		// 	return function(len) {
+		// 		return ((31 - Math.clz32(len - 1)) / 5) | 0
+		// 	}
+		// }
+		// return function(len) {
+		// 	len--
+		// 	// 0000000000000000000000000100000 // 32
+		// 	// 0000000000000000000010000000000 // 1024
+		// 	// 0000000000000001000000000000000 // 32768
+		// 	// 0000000000100000000000000000000 // 1048576
+		// 	// 0000010000000000000000000000000 // 33554432
+		// 	// 1000000000000000000000000000000 // 1073741824
+		// 	return 0 + !!(len >>> 30) + !!(len >>> 25) + !!(len >>> 20) + !!(len >>> 15) + !!(len >>> 10) + 1 //!!(len >>> 5)
+		// }
+
+		return function(len) {
+			if (len <= 1024) return 1;
+			if (len <= 32768) return 2;
+			if (len <= 1048576) return 3;
+			if (len <= 33554432) return 4;
+			if (len <= 1073741824) return 5;
+			return 6;
+		}
+	})(),
 	
 	/*
 	 * optimization strategy here is a form of loop unrolling, where instead
@@ -472,22 +511,121 @@ export const Cassowry = {
 		}
 	},
 
-	treeReduceInner: function treeReduceInner(fn, seed, tree, depth, totalLen, isLast) {
-		if (depth == 0)
-			return this.aReduceTo(fn, seed, tree, isLast ? ((totalLen & 31) + 1) : tree.length);
-
-		var len = isLast ? (((totalLen >>> (depth * 5)) & 31) + 1) : tree.length
-
-		for (var i = 0; len > i; i++) {
-			seed = this.treeReduceInner(fn, seed, tree[i], depth - 1, totalLen, isLast && len == i)
+	cancelableTreeReduce(fn, seed, tree, depth, i, end) {
+		var d0, d1, d2, d3, d4, d5, j;
+		switch(depth) {
+			case 5:
+				d5 = tree
+				d4 = d5[(i >>> 25) & 31]
+				d3 = d4[(i >>> 20) & 31]
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 4:
+				d4 = tree
+				d3 = d4[(i >>> 20) & 31]
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 3:
+				d3 = tree
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 2:
+				d2 = tree
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 1:
+				d1 = tree
+				d0 = d1[(i >>> 5) & 31]
+				break;
 		}
 
+
+		d5End: while(true) {
+			d4End: while(true) {
+				d3End: while(true) {
+					d2End: while(true) {
+						d1End: while(true) {
+							var end0 = i + 32; //it pays only having full blocks in the tree
+							while(i < end0) {
+								if (i == end)
+									break d5End;
+
+								seed = fn(seed, d0[i & 31], i);
+								if (this.isCancelled(seed)) {
+									break d5End;
+								}
+								i++;
+							}
+							if (!(j = (i >>> 5) & 31)) { //if j == 0
+								break d1End;
+							}
+							d0 = d1[j]
+						}
+						if (!d2 || ((i >>> 10) & 31) == 0) {
+							break d2End;
+						}
+						d1 = d2[(i >>> 10) & 31]
+						d0 = d1[(i >>> 5) & 31]
+					}
+					if (!d3 || ((i >>> 15) & 31) == 0) {
+						break d3End;
+					}
+					d2 = d3[(i >>> 15) & 31]
+					d1 = d2[(i >>> 10) & 31]
+					d0 = d1[(i >>> 5) & 31]
+				}
+				if (!d4 || ( (i >>> 20) & 31) == 0) {
+					break d4End;
+				}
+				d3 = d4[(i >>> 20) & 31]
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+			}
+			if (!d5 || ((i >>> 25) & 31) == 0) {
+				break d5End;
+			}
+			d4 = d5[(i >>> 25) & 31]
+			d3 = d4[(i >>> 20) & 31]
+			d2 = d3[(i >>> 15) & 31]
+			d1 = d2[(i >>> 10) & 31]
+			d0 = d1[(i >>> 5) & 31]
+		}
 		return seed;
 	},
-	
-	treeReduce(fn, seed, tree, treeLen) {
-		return this.treeReduceInner(fn, seed, tree, this.depthFromLength(treeLen), treeLen - 1, true)
+	cancelableReduce(fn, seed, list) {
+		var pre = list.pre
+			, len = list.length - (pre && pre.length || 0)
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
+
+
+		while (pre && !this.isCancelled(seed)) {
+			seed = fn(seed, pre.data)
+			pre = pre.link
+		}
+
+		if (treeLen && !this.isCancelled(seed)) {
+			seed = this.cancelableTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen)
+		}
+
+		if (tailLen && !this.isCancelled(seed)) {
+			var tail = list.aft
+			for (var i = 0; tailLen > i && !this.isCancelled(seed); i++) {
+				seed = fn(seed, tail[i])
+			}
+		}
+
+		return seed
 	},
+
 
 	// it's weird to have a pre and aft but no root, so let's shift the pre up
 	squash(list) {
@@ -511,8 +649,10 @@ export const Cassowry = {
 		return list;
 	},
 
+	
+	
 
-// = main operations ====================================================
+// = main/public operations ====================================================
 
 	nth(i, list, notFound) {
 		var tree = list.root
@@ -544,6 +684,9 @@ export const Cassowry = {
 		if (len < 32 || !(i < (treeLen + preLen)))
 			return list.aft[i & 31];
 
+		if (list.originOffset)
+			i += list.originOffset
+
 		if (treeLen < 32)
 			return tree[i & 31];
 		if (treeLen <= 1024)
@@ -559,25 +702,17 @@ export const Cassowry = {
 
 		return this.IllegalRange('range cannot be higher than 1,073,741,824')
 	},
+	
 	empty() {
 		return this.factory();
 	},
+	
 	of(...values) {
 		if (values.length > 32) {
 			//blow up or something
 		}
 		var vec = new Vector(values.length);
 		vec.aft = values;
-		return vec;
-	},
-
-	clone(list){
-		var vec = this.factory();
-		vec.length = list.length;
-		vec.root = list.root;
-		vec.pre = list.pre;
-		vec.aft = list.aft;
-
 		return vec;
 	},
 
@@ -705,8 +840,12 @@ export const Cassowry = {
 		var _newTreeLen = n - preLen;
 		var depth = this.depthFromLength(treeLen);
 
-		vec.aft = this.trimTail(list.root, depth, _newTreeLen);
-		vec.root = n < 32 ? null : this.trimTreeHeight(list.root, depth, (_newTreeLen >>> 5) << 5);
+		if (n < 32) {
+			vec.aft = this.trimTail(list.root, depth, _newTreeLen);
+		} else {
+			vec.root =  this.trimTreeHeight(list.root, depth, (_newTreeLen >>> 5) << 5);
+		}
+
 		vec.pre = pre;
 		return this.squash(vec)
 	},
@@ -831,51 +970,29 @@ export const Cassowry = {
 	},
 
 	reduce(fn, seed, list) {
-		// iterate over pre first
-		var pre = list.pre
-			, len = list.length - (pre && pre.length || 0)
-			, treeLen = (len >>> 5) << 5
-			, tailLen = len & 31
-		
-		while (pre) {
-			seed = fn(seed, pre.data)
-			pre = pre.link
-		}
-		
-		if (treeLen) {
-			seed = this.treeReduce(fn, seed, list.root, treeLen)
-		}
-		
-		if (tailLen) {
-			seed = this.aReduceTo(fn, seed, list.aft, tailLen)
-		}
-		
-		return seed;
-
+		// todo: do we need to unwrap CancelToken here?
+		return this.cancelableReduce(fn, seed, list)
 	},
 	reduceRight(fn, seed, list) {
 		throw new Error('operation not supported...yet')
 	},
 
 	find(predicate, list) {
+		var lib = {
+				Token: this.CancelToken
+				, predicate
+				, step(_, value, index) {
+					return this.predicate(value) ? new this.Token(value, index) : null
+				}
+			}
 
-		throw new Error('operation not supported...yet')
-		return {
-			index: -1,
-			value: null
-		}
+		var result = this.cancelableReduce(lib.step.bind(lib), null, list)
+		return this.isCancelled(result) ? result : {
+				index: -1,
+				value: null
+			};
+
 	}
-	// map(fn, list) {
-	// 	var addIn = {
-	// 		fn
-	// 		, appendǃ: this.appendǃ
-	// 		, appendLeafOntoTreeǃ: this.appendLeafOntoTreeǃ
-	// 		, step: function(list, value) {
-	// 			return this.appendǃ(this.fn(value), list)
-	// 		}
-	// 	};
-	// 	return this.reduce(addIn.step.bind(addIn), list, this.empty())
-	// }
 
 
 };

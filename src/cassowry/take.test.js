@@ -28,7 +28,7 @@ describe('take tests', () => {
 			var sum = Cassowry.reduce((sum, value) => {
 				expect(sum).toEqual(value);
 				return sum + 1
-			}, vec, 0)
+			}, 0, vec)
 
 			expect(sum).toEqual(vec.length, 'sum was not as expected')
 		})

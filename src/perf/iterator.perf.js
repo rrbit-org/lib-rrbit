@@ -1,5 +1,6 @@
 import Immutable from 'immutable';
 import mori from 'mori';
+import _ from 'lodash'
 import {AppendTrait} from '../append';
 import {iterator} from '../iterator';
 import {createClass} from '../test/classUtil';
@@ -67,19 +68,19 @@ var list_1k = {
 
 describe('', function() {
 
-	it('mori iteration speed', function() {
+	it('mori for-of speed', function() {
 		for (var value of list_1k.mori) {
 			value + value;
 		}
 	})
 
-	it('immutable-js iteration speed', function() {
+	it('immutable-js for-of speed', function() {
 		for (var value of list_1k.imm) {
 			value + value;
 		}
 	})
 
-	it('rrbit iteration speed', function() {
+	it('rrbit for-of speed', function() {
 		for (var value of list_1k.rrbit) {
 			value + value;
 		}
@@ -97,7 +98,7 @@ describe('', function() {
 		}, list_1k.cass, 0)
 	});
 
-	it.skip('native iteration speed', function() {
+	it.skip('native for-of speed', function() {
 		for (var value of list_1k.native) {
 			value + value;
 		}
@@ -110,12 +111,18 @@ describe('', function() {
 
 	})
 
-	it.skip('native for speed', function() {
+	it('native for speed', function() {
 		var list = list_1k.native
 		for (var i=0; list.length > i; i++) {
 			var value = list[i]
 			value + value;
 		}
+	})
+	it('lodash forEach speed', function() {
+		var list = list_1k.native
+		_.reduce(list, (_, value) => {
+			value + value
+		})
 	})
 
 })

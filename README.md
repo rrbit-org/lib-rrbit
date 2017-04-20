@@ -86,8 +86,10 @@ this limitation can be mitigated
 |rrbit iteration speed                     |    33367.63 op/s| for of loop |
 |native array iteration speed              |    17023.14 op/s| for of loop |
 |native forEach speed                      |    79403.02 op/s|     forEach |
-|rrbit iteration speed                     |   631643.88 op/s|      reduce |
-|rrbit cassowry reduce speed               |   100412.47 op/s|      reduce |
+|rrbit reduce                              |    63164.88 op/s|      reduce |
+|lodash v4 forEach                         |    73609.82 op/s|     forEach |
+|native for loop                           |  1203400.09 op/s|         for |
+|rrbit cassowry reduce speed               |  1751116.63 op/s|      reduce |
 |--------------------------------------------------------------------------|
 |native push 1k immutable with es6 spread  |      352.55 op/s| unshift/prepend |
 |immutable-js unshift 1k                   |      947.95 op/s| unshift/prepend |
@@ -97,6 +99,6 @@ this limitation can be mitigated
 |--------------------------------------------------------------------------|
 |native slice half                         |    28064.72 op/s | take/slice |
 |rrbit take                                |  1361882.81 op/s | take/slice |
-|rrbit (Cassowry) take                     |  1785120.70 op/s | take/slice |
 |immutable-js take half                    |  2100578.67 op/s | take/slice |
 |mori take half                            |  2396771.15 op/s | take/slice |
+|rrbit (Cassowry) take                     |  3260573.92 op/s | take/slice |
