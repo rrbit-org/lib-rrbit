@@ -803,6 +803,7 @@ export const Cassowry = {
 			, len = length - preLen
 			, treeLen = (len >>> 5) << 5
 			, tailLen = len & 31
+			, n = i - preLen
 
 		if (!length)
 			return list;
@@ -817,11 +818,9 @@ export const Cassowry = {
 			return vec;
 		}
 
-		// this could be optimized, but we like to have this for appendAll
-		vec.aft = vec.aft ? this.aSlice(0, tailLen, vec.aft) : null
-
 		if (i > (preLen + treeLen)) {
-			vec.aft[i & 31] = value;
+			vec.aft = vec.aft ? this.aSlice(0, tailLen, vec.aft) : null
+			vec.aft[n & 31] = value;
 			return vec;
 		}
 
@@ -832,59 +831,57 @@ export const Cassowry = {
 		switch(depth) {
 			case 5:
 				d5 = tree
-				d4 = d5[(i >> 25) & 31]
-				d3 = d4[(i >> 20) & 31]
-				d2 = d3[(i >> 15) & 31]
-				d1 = d2[(i >> 10) & 31]
-				d0 = d1[(i >> 5) & 31]
-				d0 = this.aSet(i & 31, value, d0)
-				d1 = this.aSet((i >> 5) & 31, d0, d1)
-				d2 = this.aSet((i >> 10) & 31, d1, d2)
-				d3 = this.aSet((i >> 15) & 31, d2, d3)
-				d4 = this.aSet((i >> 20) & 31, d3, d4)
-				d5 = this.aSet((i >> 25) & 31, d4, d5)
+				d4 = d5[(n >> 25) & 31]
+				d3 = d4[(n >> 20) & 31]
+				d2 = d3[(n >> 15) & 31]
+				d1 = d2[(n >> 10) & 31]
+				d0 = d1[(n >> 5) & 31]
+				d0 = this.aSet(n & 31, value, d0)
+				d1 = this.aSet((n >> 5) & 31, d0, d1)
+				d2 = this.aSet((n >> 10) & 31, d1, d2)
+				d3 = this.aSet((n >> 15) & 31, d2, d3)
+				d4 = this.aSet((n >> 20) & 31, d3, d4)
+				d5 = this.aSet((n >> 25) & 31, d4, d5)
 				vec.root = d5;
 				break;
 			case 4:
 				d4 = tree
-				d3 = d4[(i >> 20) & 31]
-				d2 = d3[(i >> 15) & 31]
-				d1 = d2[(i >> 10) & 31]
-				d0 = d1[(i >> 5) & 31]
-				d0 = this.aSet(i & 31, value, d0)
-				d1 = this.aSet((i >> 5) & 31, d0, d1)
-				d2 = this.aSet((i >> 10) & 31, d1, d2)
-				d3 = this.aSet((i >> 15) & 31, d2, d3)
-				d4 = this.aSet((i >> 20) & 31, d3, d4)
+				d3 = d4[(n >> 20) & 31]
+				d2 = d3[(n >> 15) & 31]
+				d1 = d2[(n >> 10) & 31]
+				d0 = d1[(n >> 5) & 31]
+				d0 = this.aSet(n & 31, value, d0)
+				d1 = this.aSet((n >> 5) & 31, d0, d1)
+				d2 = this.aSet((n >> 10) & 31, d1, d2)
+				d3 = this.aSet((n >> 15) & 31, d2, d3)
+				d4 = this.aSet((n >> 20) & 31, d3, d4)
 				vec.root = d4;
 				break;
 			case 3:
 				d3 = tree
-				d2 = d3[(i >> 15) & 31]
-				d1 = d2[(i >> 10) & 31]
-				d0 = d1[(i >> 5) & 31]
-				d0 = this.aSet(i & 31, value, d0)
-				d1 = this.aSet((i >> 5) & 31, d0, d1)
-				d2 = this.aSet((i >> 10) & 31, d1, d2)
-				d3 = this.aSet((i >> 15) & 31, d2, d3)
+				d2 = d3[(n >> 15) & 31]
+				d1 = d2[(n >> 10) & 31]
+				d0 = d1[(n >> 5) & 31]
+				d0 = this.aSet(n & 31, value, d0)
+				d1 = this.aSet((n >> 5) & 31, d0, d1)
+				d2 = this.aSet((n >> 10) & 31, d1, d2)
+				d3 = this.aSet((n >> 15) & 31, d2, d3)
 				vec.root = d3;
 			case 2:
 				d2 = tree
-				d1 = d2[(i >> 10) & 31]
-				d0 = d1[(i >> 5) & 31]
-				d0 = this.aSet(i & 31, value, d0)
-				d1 = this.aSet((i >> 5) & 31, d0, d1)
-				d2 = this.aSet((i >> 10) & 31, d1, d2)
+				d1 = d2[(n >> 10) & 31]
+				d0 = d1[(n >> 5) & 31]
+				d0 = this.aSet(n & 31, value, d0)
+				d1 = this.aSet((n >> 5) & 31, d0, d1)
+				d2 = this.aSet((n >> 10) & 31, d1, d2)
 				vec.root = d2;
 				break;
 			case 1:
-				d2 = tree
-				d1 = d2[(i >> 10) & 31]
-				d0 = d1[(i >> 5) & 31]
-				d0 = this.aSet(i & 31, value, d0)
-				d1 = this.aSet((i >> 5) & 31, d0, d1)
-				d2 = this.aSet((i >> 10) & 31, d1, d2)
-				vec.root = d2;
+				d1 = tree
+				d0 = d1[(n >> 5) & 31]
+				d0 = this.aSet(n & 31, value, d0)
+				d1 = this.aSet((n >> 5) & 31, d0, d1)
+				vec.root = d1;
 				break;
 		}
 
