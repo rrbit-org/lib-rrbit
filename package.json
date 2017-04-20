@@ -1,6 +1,6 @@
 {
   "name": "lib-rrbit",
-  "version": "2.0.5-beta",
+  "version": "2.0.6-beta",
   "description": "core operations for use on relaxed radix balanced vectors",
   "main": "lib/index.cjs.js",
   "module": "src/index.js",

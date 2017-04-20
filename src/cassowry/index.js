@@ -797,7 +797,98 @@ export const Cassowry = {
 	},
 	
 	update(i, value, list) {
-		throw new Error('operation not supported...yet')
+		var length = list.length
+			, pre = list.pre
+			, preLen = pre && pre.length || 0
+			, len = length - preLen
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
+
+		if (!length)
+			return list;
+
+		var vec = this.clone(list);
+
+		if (preLen > i) {
+			var newPre = this.llToArray(pre)
+			newPre[i] = value;
+			newPre = this.arrayToLL(newPre)
+			vec.pre = newPre
+			return vec;
+		}
+
+		// this could be optimized, but we like to have this for appendAll
+		vec.aft = vec.aft ? this.aSlice(0, tailLen, vec.aft) : null
+
+		if (i > (preLen + treeLen)) {
+			vec.aft[i & 31] = value;
+			return vec;
+		}
+
+		var d0, d1, d2, d3, d4, d5
+			, depth = this.depthFromLength(treeLen)
+			, tree = vec.root
+
+		switch(depth) {
+			case 5:
+				d5 = tree
+				d4 = d5[(i >> 25) & 31]
+				d3 = d4[(i >> 20) & 31]
+				d2 = d3[(i >> 15) & 31]
+				d1 = d2[(i >> 10) & 31]
+				d0 = d1[(i >> 5) & 31]
+				d0 = this.aSet(i & 31, value, d0)
+				d1 = this.aSet((i >> 5) & 31, d0, d1)
+				d2 = this.aSet((i >> 10) & 31, d1, d2)
+				d3 = this.aSet((i >> 15) & 31, d2, d3)
+				d4 = this.aSet((i >> 20) & 31, d3, d4)
+				d5 = this.aSet((i >> 25) & 31, d4, d5)
+				vec.root = d5;
+				break;
+			case 4:
+				d4 = tree
+				d3 = d4[(i >> 20) & 31]
+				d2 = d3[(i >> 15) & 31]
+				d1 = d2[(i >> 10) & 31]
+				d0 = d1[(i >> 5) & 31]
+				d0 = this.aSet(i & 31, value, d0)
+				d1 = this.aSet((i >> 5) & 31, d0, d1)
+				d2 = this.aSet((i >> 10) & 31, d1, d2)
+				d3 = this.aSet((i >> 15) & 31, d2, d3)
+				d4 = this.aSet((i >> 20) & 31, d3, d4)
+				vec.root = d4;
+				break;
+			case 3:
+				d3 = tree
+				d2 = d3[(i >> 15) & 31]
+				d1 = d2[(i >> 10) & 31]
+				d0 = d1[(i >> 5) & 31]
+				d0 = this.aSet(i & 31, value, d0)
+				d1 = this.aSet((i >> 5) & 31, d0, d1)
+				d2 = this.aSet((i >> 10) & 31, d1, d2)
+				d3 = this.aSet((i >> 15) & 31, d2, d3)
+				vec.root = d3;
+			case 2:
+				d2 = tree
+				d1 = d2[(i >> 10) & 31]
+				d0 = d1[(i >> 5) & 31]
+				d0 = this.aSet(i & 31, value, d0)
+				d1 = this.aSet((i >> 5) & 31, d0, d1)
+				d2 = this.aSet((i >> 10) & 31, d1, d2)
+				vec.root = d2;
+				break;
+			case 1:
+				d2 = tree
+				d1 = d2[(i >> 10) & 31]
+				d0 = d1[(i >> 5) & 31]
+				d0 = this.aSet(i & 31, value, d0)
+				d1 = this.aSet((i >> 5) & 31, d0, d1)
+				d2 = this.aSet((i >> 10) & 31, d1, d2)
+				vec.root = d2;
+				break;
+		}
+
+		return vec;
 	},
 
 	take(n, list) {
@@ -954,6 +1045,7 @@ export const Cassowry = {
 			, leftPreLength = leftPre.length || 0
 			, leftLength = left.length
 			, leftTreeLength = ((leftLength - leftPreLength) >>> 5) << 5
+			, leftTailLength = (leftLength - leftPreLength) & 31
 			// , leftDepth = this.depthFromLength(leftTreeLength)
 			// , rightPre = right.pre
 			// , rightPreLength = rightPre.length || 0
@@ -961,11 +1053,10 @@ export const Cassowry = {
 			// , rightTreeLength = ((rightLength - rightPreLength) >>> 5) << 5
 			// , rightDepth = this.depthFromLength(rightTreeLength)
 
-		vec.length = leftLength;
-		vec.pre = left.pre;
-		vec.aft = left.aft;
 		// clone right-most edge all the way down, so we can do fast append
 		vec.root = left.root ? this.trimTree(left.root, this.depthFromLength(leftTreeLength), leftTreeLength) : null;
+		vec.aft = vec.aft ? this.aSlice(0, leftTailLength, vec.aft) : null
+
 
 
 
