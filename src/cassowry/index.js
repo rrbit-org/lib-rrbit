@@ -672,7 +672,7 @@ export const Cassowry = {
 		var len = totalLength - preLen;
 		var treeLen = ((len ) >>> 5) << 5;
 
-		if (len < 32 || !(i < (treeLen + preLen)))
+		if (len < 32 || i >= treeLen)
 			return list.aft[i & 31];
 
 		if (list.originOffset)
