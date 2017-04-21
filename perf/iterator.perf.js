@@ -1,19 +1,19 @@
 import Immutable from 'immutable';
 import mori from 'mori';
 import _ from 'lodash'
-import {AppendTrait} from '../append';
-import {iterator} from '../iterator';
-import {createClass} from '../test/classUtil';
-import {Cassowry} from '../cassowry/index'
+// import {AppendTrait} from '../append';
+// import {iterator} from '../iterator';
+// import {createClass} from '../test/classUtil';
+import {Cassowry} from '../src/index'
 Cassowry.reduce = Cassowry.reduce.bind(Cassowry)
 Cassowry.append = Cassowry.append.bind(Cassowry)
 Cassowry.empty = Cassowry.empty.bind(Cassowry)
 
-var Vector = createClass(AppendTrait)
-
-Vector.prototype[Symbol.iterator] = function() {
-	return iterator(0, this.length, this);
-}
+// var Vector = createClass(AppendTrait)
+//
+// Vector.prototype[Symbol.iterator] = function() {
+// 	return iterator(0, this.length, this);
+// }
 
 
 
@@ -33,14 +33,14 @@ var list_1k = {
 		list[Symbol.iterator] = list.undefined
 		return list;
 	})(),
-	rrbit: (function(){
-		var list = Vector.empty();
-
-		for (var i = 0; 1000 > i; i++) {
-			list = list.append(i, list)
-		}
-		return list
-	})(),
+	// rrbit: (function(){
+	// 	var list = Vector.empty();
+	//
+	// 	for (var i = 0; 1000 > i; i++) {
+	// 		list = list.append(i, list)
+	// 	}
+	// 	return list
+	// })(),
 	native: (function(){
 		var list = []
 
@@ -80,18 +80,18 @@ describe('', function() {
 		}
 	})
 
-	it('rrbit for-of speed', function() {
-		for (var value of list_1k.rrbit) {
-			value + value;
-		}
-	})
-
-	it('rrbit reduce speed', function() {
-		var it = iterator(0, list_1k.rrbit.length, list_1k.rrbit);
-		it.reduce(function(acc, value) {
-			value + value;
-		}, null);
-	});
+	// it('rrbit for-of speed', function() {
+	// 	for (var value of list_1k.rrbit) {
+	// 		value + value;
+	// 	}
+	// })
+	//
+	// it('rrbit reduce speed', function() {
+	// 	var it = iterator(0, list_1k.rrbit.length, list_1k.rrbit);
+	// 	it.reduce(function(acc, value) {
+	// 		value + value;
+	// 	}, null);
+	// });
 	it('rrbit:cassowry reduce speed', function() {
 		Cassowry.reduce(function(acc, value) {
 			value + value;

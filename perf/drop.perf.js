@@ -1,11 +1,11 @@
 import Immutable from 'immutable';
 import mori from 'mori';
-import {AppendTrait} from '../append';
-import {DropTrait} from '../drop';
-import {createClass} from '../test/classUtil';
-import {Cassowry} from '../cassowry/index'
+// import {AppendTrait} from '../append';
+// import {DropTrait} from '../drop';
+// import {createClass} from '../test/classUtil';
+import {Cassowry} from '../src/index'
 
-var Vector = createClass(AppendTrait, DropTrait)
+// var Vector = createClass(AppendTrait, DropTrait)
 
 
 
@@ -27,14 +27,14 @@ var list_1k = {
 		// list[Symbol.iterator] = list.undefined
 		return list;
 	})(),
-	rrbit: (function(){
-		var list = Vector.empty();
-
-		for (var i = 0; 1000 > i; i++) {
-			list = list.append(i, list)
-		}
-		return list
-	})(),
+	// rrbit: (function(){
+	// 	var list = Vector.empty();
+	//
+	// 	for (var i = 0; 1000 > i; i++) {
+	// 		list = list.append(i, list)
+	// 	}
+	// 	return list
+	// })(),
 	cass: (function() {
 		var vec = Cassowry.empty()
 		for (var i = 0; 1000 > i; i++) {
@@ -63,9 +63,14 @@ describe('', function() {
 		list_1k.imm.slice(256, 1024)
 	})
 
-	it('rrbit drop speed', function() {
-		var vec = list_1k.rrbit;
-		vec.drop(256, vec)
+	// it('rrbit drop speed', function() {
+	// 	var vec = list_1k.rrbit;
+	// 	vec.drop(256, vec)
+	// })
+
+	it('cassowry drop speed', function() {
+		var vec = list_1k.cass;
+		Cassowry.drop(256, vec)
 	})
 
 	it('native drop speed', function() {

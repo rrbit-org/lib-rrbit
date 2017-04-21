@@ -1,30 +1,31 @@
 import Immutable from 'immutable';
 import mori from 'mori';
 // import * as Eagle from '../../eagle'
-import * as v2 from '../scratch/v2';
+
 // import {} from '../shared/constructors';
-import {AppendTrait} from '../append';
-import {createClass, DEPTHS} from '../test/classUtil';
-import {Cassowry} from '../cassowry/index';
+// import {AppendTrait} from '../append';
+// import {createClass, DEPTHS} from '../test/classUtil';
+import {Cassowry} from '../src/index';
+
 Cassowry.empty = Cassowry.empty.bind(Cassowry)
 Cassowry.appendǃ = Cassowry.appendǃ.bind(Cassowry)
 Cassowry.append = Cassowry.append.bind(Cassowry)
 
 // Vector as a class --------------------------------------------------
 
-var Vector = createClass(AppendTrait)
+// var Vector = createClass(AppendTrait)
 
 //Vector as an object --------------------------------------------------
 
-var VectorObj = {
-	...AppendTrait
-};
+// var VectorObj = {
+// 	...AppendTrait
+// };
 
-function factory(len) {
-	return { length: len }
-}
+// function factory(len) {
+// 	return { length: len }
+// }
 
-VectorObj.factory = factory;
+// VectorObj.factory = factory;
 
 describe('append/push comparisons', function() {
 
@@ -51,21 +52,21 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it('eagle 1k', function() {
-		var list = Vector.empty();
-
-		for (var i = 0; 1000 > i; i++) {
-			list = list.append(i, list)
-		}
-	})
-
-	it('eagle 1k ǃ', function() {
-		var list = Vector.empty();
-
-		for (var i = 0; 1000 > i; i++) {
-			list = list.appendǃ(i, list)
-		}
-	})
+	// it('eagle 1k', function() {
+	// 	var list = Vector.empty();
+	//
+	// 	for (var i = 0; 1000 > i; i++) {
+	// 		list = list.append(i, list)
+	// 	}
+	// })
+	//
+	// it('eagle 1k ǃ', function() {
+	// 	var list = Vector.empty();
+	//
+	// 	for (var i = 0; 1000 > i; i++) {
+	// 		list = list.appendǃ(i, list)
+	// 	}
+	// })
 	it('cassowry 1k', function() {
 		var list = Cassowry.empty();
 		var append = Cassowry.append
@@ -132,21 +133,7 @@ describe('append/push comparisons', function() {
 		}
 	})
 
-	it.skip('v2 1k', function() {
-		var list = v2.empty()
 
-		for (var i = 0; 1000 > i; i++) {
-			list = v2.append(i, list)
-		}
-	})
-
-	it.skip('v2 1k !', function() {
-		var list = v2.empty()
-
-		for (var i = 0; 1000 > i; i++) {
-			list = v2.appendǃ(i, list)
-		}
-	})
 
 	it('native push 1k mutating(max possible)', function() {
 		var list = []

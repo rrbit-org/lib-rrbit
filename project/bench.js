@@ -4,14 +4,18 @@ var vm = require('vm');
 // var babel = require('babel-core');
 var babel = require('rollup-plugin-babel')
 var rollup = require('rollup');
+var yargs = require('yargs')
+
 var exec = require('./runSuiteHelper');
 
 
+var fileName = yargs.argv.file
+var file = path.resolve(__dirname, '../', fileName);
+
+run(file)
 
 
-
-
-module.exports = function run(fileName) {
+function run(fileName) {
 
 	var suites = [];
 	var skipped = [];

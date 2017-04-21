@@ -1,14 +1,14 @@
 import Immutable from 'immutable';
 import mori from 'mori';
-import {PrependTrait} from '../prepend';
-import {createClass, DEPTHS} from '../test/classUtil';
-import {Cassowry} from '../cassowry/index';
+// import {PrependTrait} from '../prepend';
+// import {createClass, DEPTHS} from '../test/classUtil';
+import {Cassowry} from '../src/index';
 Cassowry.empty = Cassowry.empty.bind(Cassowry)
 Cassowry.prepend = Cassowry.prepend.bind(Cassowry)
 
 // Vector as a class --------------------------------------------------
 
-var Vector = createClass(PrependTrait)
+// var Vector = createClass(PrependTrait)
 
 
 describe('prepend/unshift comparisons', function() {
@@ -27,13 +27,13 @@ describe('prepend/unshift comparisons', function() {
 		}
 	})
 
-	it('eagle prepend 1k', function() {
-		var list = Vector.empty();
-
-		for (var i = 0; 1024 > i; i++) {
-			list = list.prepend(i, list)
-		}
-	})
+	// it('eagle prepend 1k', function() {
+	// 	var list = Vector.empty();
+	//
+	// 	for (var i = 0; 1024 > i; i++) {
+	// 		list = list.prepend(i, list)
+	// 	}
+	// })
 
 	it('cassowry prepend 1k', function() {
 		var c = Cassowry

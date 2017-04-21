@@ -6,6 +6,7 @@
   "module": "src/index.js",
   "repository": "https://github.com/team-rrbit/lib-rrbit",
   "license": "MIT",
+  "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.24.0",
     "babel-plugin-external-helpers": "^6.22.0",
@@ -26,6 +27,7 @@
     "flow-bin": "^0.41.0",
     "immutable": "^3.8.1",
     "immutable-array-methods": "^1.5.0",
+    "jest": "^19.0.2",
     "jsonfile": "^2.4.0",
     "lodash": "^4.17.4",
     "mocha": "^3.2.0",
@@ -40,15 +42,13 @@
   "scripts": {
     "test": "BABEL_ENV=test ./node_modules/.bin/jest test/*.test.js",
     "test:only": "BABEL_ENV=test ./node_modules/.bin/jest --no-cache ",
-    "bench:push": "BABEL_ENV=prod node project/benchFile.js --file=perf/append.perf.js",
-    "bench:pre": "node project/benchPrepend.js",
-    "bench:iter": "node project/benchIterator.js",
-    "bench:conc": "node project/benchConcat.js",
-    "bench:drop": "node project/benchDrop.js",
-    "bench:take": "node project/benchTake.js",
+    "bench:push": "BABEL_ENV=prod node project/bench.js --file=perf/append.perf.js",
+    "bench:pre": "BABEL_ENV=prod node project/bench.js --file=perf/prepend.perf.js",
+    "bench:iter": "BABEL_ENV=prod node project/bench.js --file=perf/iterator.perf.js",
+    "bench:conc": "BABEL_ENV=prod node project/bench.js --file=perf/appendAll.perf.js",
+    "bench:drop": "BABEL_ENV=prod node project/bench.js --file=perf/drop.perf.js",
+    "bench:take": "BABEL_ENV=prod node project/bench.js --file=perf/take.perf.js",
+
     "build": "BABEL_ENV=prod ./node_modules/.bin/rollup --config rollup.prod.js"
-  },
-  "dependencies": {
-    "jest": "^19.0.2"
   }
 }
