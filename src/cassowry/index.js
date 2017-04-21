@@ -105,20 +105,12 @@ export const Cassowry = {
 	arrayToLL: function(arr) {
 		var list = null;
 		for (var i = arr.length - 1; i >= 0; i--) {
-			this.addLL(arr[i], list);
+			list = this.addLL(arr[i], list);
 		}
 		return list;
 	},
 
 	// = immutable array helpers =======================================================
-	aCopy(arr) {
-		var len = arr.length;
-		var result = new Array(len);
-		for (var i = 0; i < len; i++) {
-			result[i] = arr[i]
-		}
-		return result;
-	},
 	aPush(value, arr) {
 		var len = arr.length;
 		var result = new Array(len + 1);
@@ -161,9 +153,6 @@ export const Cassowry = {
 		var result = this.aSlice(0, index, src);
 		result[index] = value;
 		return result
-	},
-	aLast(arr) {
-		return arr[Math.max(arr.length, 0) - 1]
 	},
 	aSlice(from, to, arr) {
 		var len = to - from;
@@ -894,9 +883,7 @@ export const Cassowry = {
 			, preLen = pre && pre.length || 0
 			, len = length - preLen
 			, treeLen = (len >>> 5) << 5
-			, tailLen = len & 31
 			, vec = this.empty()
-			, d0, d1, d2, d3, d4, d5
 
 		vec.length = n;
 
@@ -918,7 +905,7 @@ export const Cassowry = {
 		}
 
 		if ((treeLen + preLen) < n) { // trim only tail
-			var _end = n & 31;
+			var _end = len & 31;
 			vec.aft = _end ? this.aSlice(0, _end, list.aft) : null;
 			vec.root = list.root;
 			vec.pre = pre;
@@ -1014,6 +1001,21 @@ export const Cassowry = {
 				d1 = list.root
 				break;
 		}
+		
+		//adjust height
+		switch(depth - newDepth) {
+			//case 5: since we don't have a 0 depth due to tail, this path never occurs
+			case 4:// dropping 4 levels
+				break
+			case 3:
+				break
+			case 2:
+				break
+			case 1:
+				break
+			case 0:
+				break;
+		}
 
 		switch(newDepth) {
 			case 5:
@@ -1025,7 +1027,8 @@ export const Cassowry = {
 			case 1:
 				// less than 1024, so logic is simple
 				newPre = this.aSlice(start & 31, 32, d1[(start >> 5) & 31])
-				d1 = this.aSlice((((start >> 5) & 31) + 1), 32, d1)
+				var x = (((start >> 5) & 31) + 1)
+				d1 = this.aSlice(x, d1.length, d1)
 				newRoot = d1.length ? d1 : null
 				break;
 		}
@@ -1043,18 +1046,10 @@ export const Cassowry = {
 			, leftLength = left.length
 			, leftTreeLength = ((leftLength - leftPreLength) >>> 5) << 5
 			, leftTailLength = (leftLength - leftPreLength) & 31
-			// , leftDepth = this.depthFromLength(leftTreeLength)
-			// , rightPre = right.pre
-			// , rightPreLength = rightPre.length || 0
-			// , rightLength = right.length
-			// , rightTreeLength = ((rightLength - rightPreLength) >>> 5) << 5
-			// , rightDepth = this.depthFromLength(rightTreeLength)
 
 		// clone right-most edge all the way down, so we can do fast append
 		vec.root = left.root ? this.trimTree(left.root, this.depthFromLength(leftTreeLength), leftTreeLength) : null;
 		vec.aft = vec.aft ? this.aSlice(0, leftTailLength, vec.aft) : null
-
-
 
 
 		vec = this.reduce(function addToLeft(list, value) {
