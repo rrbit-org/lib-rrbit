@@ -1,17 +1,14 @@
-import buble from 'rollup-plugin-buble';
-// import resolve from 'rollup-plugin-node-resolve'
 import cleanup from 'rollup-plugin-cleanup'
-import flow from 'rollup-plugin-flow'
+import babel from 'rollup-plugin-babel';
 
-export default  {
+export default {
 	entry: 'src/index.js',
-	plugins: [
-		flow(),
-		buble({
-			objectAssign: 'Object.assign'
-		}),
-		cleanup()
-	],
 	format: 'cjs',
-	dest: 'lib/index.cjs.js'
-}
+	plugins: [
+		babel({
+			exclude: 'node_modules/**' // only transpile our source code
+		})
+		, cleanup()
+	],
+	dest: 'lib/rrbit.js'
+};
