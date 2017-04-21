@@ -1,4 +1,4 @@
-import {Cassowry} from '../src/index'
+import {Cassowry} from '../src/index';
 
 export const DEPTHS = [
 	32, // 0 depth (leaf only) (32 ** 1)
@@ -19,5 +19,5 @@ export function range(size) {
 }
 
 export function pretty(number) {
-	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

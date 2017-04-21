@@ -1,13 +1,13 @@
 import Immutable from 'immutable';
 import mori from 'mori';
-import _ from 'lodash'
+import _ from 'lodash';
 // import {AppendTrait} from '../append';
 // import {iterator} from '../iterator';
 // import {createClass} from '../test/classUtil';
-import {Cassowry} from '../src/index'
-Cassowry.reduce = Cassowry.reduce.bind(Cassowry)
-Cassowry.append = Cassowry.append.bind(Cassowry)
-Cassowry.empty = Cassowry.empty.bind(Cassowry)
+import {Cassowry} from '../src/index';
+Cassowry.reduce = Cassowry.reduce.bind(Cassowry);
+Cassowry.append = Cassowry.append.bind(Cassowry);
+Cassowry.empty = Cassowry.empty.bind(Cassowry);
 
 // var Vector = createClass(AppendTrait)
 //
@@ -15,22 +15,20 @@ Cassowry.empty = Cassowry.empty.bind(Cassowry)
 // 	return iterator(0, this.length, this);
 // }
 
-
-
 var list_1k = {
-	imm: (function(){
+	imm: (function() {
 		var list = Immutable.List();
 		for (var i = 0; 1000 > i; i++) {
-			list = list.push(i)
+			list = list.push(i);
 		}
 		return list;
 	})(),
-	mori: (function(){
+	mori: (function() {
 		var list = mori.vector();
 		for (var i = 0; 1000 > i; i++) {
-			list = mori.conj(list, i)
+			list = mori.conj(list, i);
 		}
-		list[Symbol.iterator] = list.undefined
+		list[Symbol.iterator] = list.undefined;
 		return list;
 	})(),
 	// rrbit: (function(){
@@ -41,25 +39,23 @@ var list_1k = {
 	// 	}
 	// 	return list
 	// })(),
-	native: (function(){
-		var list = []
+	native: (function() {
+		var list = [];
 
 		for (var i = 0; 1000 > i; i++) {
-			list.push(i)
+			list.push(i);
 		}
-		return list
+		return list;
 	})(),
-	cass: (function(){
+	cass: (function() {
 		var list = Cassowry.empty();
 
 		for (var i = 0; 1000 > i; i++) {
-			list = Cassowry.append(i, list)
+			list = Cassowry.append(i, list);
 		}
-		return list
+		return list;
 	})()
-
 };
-
 
 // console.log('iterator symbol:', list_1k.mori['@@iterator'])
 // console.log(list_1k.mori.undefined)
@@ -67,18 +63,17 @@ var list_1k = {
 // console.log(list_1k.mori.toString.toString())
 
 describe('', function() {
-
 	it('mori for-of speed', function() {
 		for (var value of list_1k.mori) {
 			value + value;
 		}
-	})
+	});
 
 	it('immutable-js for-of speed', function() {
 		for (var value of list_1k.imm) {
 			value + value;
 		}
-	})
+	});
 
 	// it('rrbit for-of speed', function() {
 	// 	for (var value of list_1k.rrbit) {
@@ -93,36 +88,38 @@ describe('', function() {
 	// 	}, null);
 	// });
 	it('rrbit:cassowry reduce speed', function() {
-		Cassowry.reduce(function(acc, value) {
-			value + value;
-		}, list_1k.cass, 0)
+		Cassowry.reduce(
+			function(acc, value) {
+				value + value;
+			},
+			list_1k.cass,
+			0
+		);
 	});
 
 	it.skip('native for-of speed', function() {
 		for (var value of list_1k.native) {
 			value + value;
 		}
-	})
+	});
 
 	it('native forEach speed', function() {
 		list_1k.native.forEach(function(value) {
 			value + value;
-		})
-
-	})
+		});
+	});
 
 	it('native for speed', function() {
-		var list = list_1k.native
-		for (var i=0; list.length > i; i++) {
-			var value = list[i]
+		var list = list_1k.native;
+		for (var i = 0; list.length > i; i++) {
+			var value = list[i];
 			value + value;
 		}
-	})
+	});
 	it('lodash forEach speed', function() {
-		var list = list_1k.native
+		var list = list_1k.native;
 		_.reduce(list, (_, value) => {
-			value + value
-		})
-	})
-
-})
+			value + value;
+		});
+	});
+});

@@ -1,12 +1,9 @@
-import {Cassowry} from '../src/index'
-import {range} from './testUtils'
+import {Cassowry} from '../src/index';
+import {range} from './testUtils';
 
-import expect from 'jest-matchers'
-
-
+import expect from 'jest-matchers';
 
 describe('drop tests', () => {
-
 	var vec_32 = range(32);
 	var vec_64 = range(64);
 	var vec_96 = range(96);
@@ -15,30 +12,32 @@ describe('drop tests', () => {
 
 	function dropSize(amount, src) {
 		it(`can drop ${amount} of ${src.length}`, function() {
-
 			var newLen = src.length - amount;
 			var vec = Cassowry.drop(amount, src);
 
-			expect(vec.length).toEqual(newLen)
-			var sum = Cassowry.reduce((i, value) => {
-				expect(value).toEqual(i + amount);
-				return i + 1
-			}, 0, vec);
+			expect(vec.length).toEqual(newLen);
+			var sum = Cassowry.reduce(
+				(i, value) => {
+					expect(value).toEqual(i + amount);
+					return i + 1;
+				},
+				0,
+				vec
+			);
 
-			expect(sum).toEqual(newLen)
-		})
+			expect(sum).toEqual(newLen);
+		});
 	}
 
 	function dropItLikeItsHot(src) {
 		var sizes = [
-			(src.length * 0.25) | 0
-			, (src.length * 0.55) | 0
-			, (src.length * 0.75) | 0
-			, (src.length) | 0
+			(src.length * 0.25) | 0,
+			(src.length * 0.55) | 0,
+			(src.length * 0.75) | 0,
+			src.length | 0
 		];
 
 		sizes.forEach(size => dropSize(size, src));
-
 	}
 
 	dropItLikeItsHot(vec_32);
@@ -46,4 +45,4 @@ describe('drop tests', () => {
 	dropItLikeItsHot(vec_96);
 	dropItLikeItsHot(vec_1k);
 	dropItLikeItsHot(vec_1024);
-})
+});

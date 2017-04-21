@@ -1,4 +1,5 @@
 # lib-rrbit
+[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 is a set core operations and helpers for use on 
 Vectors(i.e Arrays) implementing a Relaxed-Radix-Balance technique from the
 [2015 paper](https://pdfs.semanticscholar.org/b26a/3dc9050f54a37197ed44711c0e42063e9b96.pdf)

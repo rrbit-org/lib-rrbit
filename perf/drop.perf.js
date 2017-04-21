@@ -3,26 +3,22 @@ import mori from 'mori';
 // import {AppendTrait} from '../append';
 // import {DropTrait} from '../drop';
 // import {createClass} from '../test/classUtil';
-import {Cassowry} from '../src/index'
+import {Cassowry} from '../src/index';
 
 // var Vector = createClass(AppendTrait, DropTrait)
 
-
-
-
-
 var list_1k = {
-	imm: (function(){
+	imm: (function() {
 		var list = Immutable.List();
 		for (var i = 0; 1000 > i; i++) {
-			list = list.push(i)
+			list = list.push(i);
 		}
 		return list;
 	})(),
-	mori: (function(){
+	mori: (function() {
 		var list = mori.vector();
 		for (var i = 0; 1000 > i; i++) {
-			list = mori.conj(list, i)
+			list = mori.conj(list, i);
 		}
 		// list[Symbol.iterator] = list.undefined
 		return list;
@@ -36,32 +32,30 @@ var list_1k = {
 	// 	return list
 	// })(),
 	cass: (function() {
-		var vec = Cassowry.empty()
+		var vec = Cassowry.empty();
 		for (var i = 0; 1000 > i; i++) {
-			vec = Cassowry.appendǃ(i, vec)
+			vec = Cassowry.appendǃ(i, vec);
 		}
-		return vec
+		return vec;
 	})(),
-	native: (function(){
-		var list = []
+	native: (function() {
+		var list = [];
 
 		for (var i = 0; 1000 > i; i++) {
-			list.push(i)
+			list.push(i);
 		}
-		return list
-	})(),
-
+		return list;
+	})()
 };
 
 describe('', function() {
-
 	it('mori drop speed', function() {
-		mori.drop(256, list_1k.mori)
-	})
+		mori.drop(256, list_1k.mori);
+	});
 
 	it('immutable-js drop speed', function() {
-		list_1k.imm.slice(256, 1024)
-	})
+		list_1k.imm.slice(256, 1024);
+	});
 
 	// it('rrbit drop speed', function() {
 	// 	var vec = list_1k.rrbit;
@@ -70,11 +64,10 @@ describe('', function() {
 
 	it('cassowry drop speed', function() {
 		var vec = list_1k.cass;
-		Cassowry.drop(256, vec)
-	})
-
-	it('native drop speed', function() {
-		list_1k.native.slice(256, 1024)
+		Cassowry.drop(256, vec);
 	});
 
-})
+	it('native drop speed', function() {
+		list_1k.native.slice(256, 1024);
+	});
+});
