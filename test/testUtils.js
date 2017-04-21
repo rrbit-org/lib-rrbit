@@ -1,4 +1,4 @@
-import {Cassowry} from './index'
+import {Cassowry} from '../src/index'
 
 export const DEPTHS = [
 	32, // 0 depth (leaf only) (32 ** 1)

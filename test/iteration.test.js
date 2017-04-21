@@ -1,5 +1,5 @@
-import {Cassowry} from './index'
-import {iterator} from './iterator'
+import {Cassowry} from '../src/index'
+import {iterator} from '../src/iterator'
 import {DEPTHS, range} from './testUtils'
 
 import expect from 'jest-matchers'

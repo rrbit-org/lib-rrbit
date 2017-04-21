@@ -1,4 +1,4 @@
-import {Cassowry} from './index'
+import {Cassowry} from '../src/index'
 import {range} from './testUtils'
 
 import expect from 'jest-matchers'
