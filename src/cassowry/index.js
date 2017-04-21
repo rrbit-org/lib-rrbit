@@ -1042,7 +1042,7 @@ export const Cassowry = {
 	appendAll(left, right) {
 		var vec = this.clone(left)
 			, leftPre = left.pre
-			, leftPreLength = leftPre.length || 0
+			, leftPreLength = leftPre &&leftPre.length || 0
 			, leftLength = left.length
 			, leftTreeLength = ((leftLength - leftPreLength) >>> 5) << 5
 			, leftTailLength = (leftLength - leftPreLength) & 31
@@ -1054,7 +1054,7 @@ export const Cassowry = {
 
 		vec = this.reduce(function addToLeft(list, value) {
 			return this.appendǃ(value, list)
-		}.bind(this), right, vec);
+		}.bind(this), vec, right);
 
 		return this.squash(vec);
 	},
