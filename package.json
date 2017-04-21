@@ -41,7 +41,13 @@
   },
   "scripts": {
     "test": "BABEL_ENV=test ./node_modules/.bin/jest test/*.test.js",
-    "test:only": "BABEL_ENV=test ./node_modules/.bin/jest --no-cache ",
+    "test:push": "BABEL_ENV=test ./node_modules/.bin/jest test/append.test.js",
+    "test:drop": "BABEL_ENV=test ./node_modules/.bin/jest test/drop.test.js",
+    "test:take": "BABEL_ENV=test ./node_modules/.bin/jest test/take.test.js",
+    "test:iter": "BABEL_ENV=test ./node_modules/.bin/jest test/iteration.test.js",
+    "test:pre": "BABEL_ENV=test ./node_modules/.bin/jest test/prepend.test.js",
+    "test:set": "BABEL_ENV=test ./node_modules/.bin/jest test/update.test.js",
+
     "bench:push": "BABEL_ENV=prod node project/bench.js --file=perf/append.perf.js",
     "bench:pre": "BABEL_ENV=prod node project/bench.js --file=perf/prepend.perf.js",
     "bench:iter": "BABEL_ENV=prod node project/bench.js --file=perf/iterator.perf.js",
