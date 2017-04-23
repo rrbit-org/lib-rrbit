@@ -17,6 +17,18 @@ function CancelToken(value, index) {
 	this.index = index;
 }
 
+function Finder(predicate) {
+	this.predicate = predicate;
+}
+Finder.prototype.Found = CancelToken;
+Finder.prototype.NotFound = new CancelToken(null, -1);
+Finder.prototype.step = function(_, value, index) {
+	return this.predicate(value) ? new this.Found(value, index) : this.NotFound
+}
+Finder.prototype.toReducer = function() {
+	return this.step.bind(this)
+}
+
 
 export function setup(factory) {
 	var lib = {
@@ -35,6 +47,7 @@ export function setup(factory) {
 		'appendAll',
 		'empty',
 		'reduce',
+		'reduceRight',
 		'find'
 		// 'iterator',
 		// 'reverseIterator'
@@ -502,6 +515,88 @@ export const Cassowry = {
 		}
 	},
 
+	reverseTreeReduce(fn, seed, tree, depth, start, i) {
+		var d0, d1, d2, d3, d4, d5, j;
+
+		i--
+		switch (depth) {
+			case 5:
+				d5 = tree
+				d4 = d5[(i >>> 25) & 31]
+				d3 = d4[(i >>> 20) & 31]
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 4:
+				d4 = tree
+				d3 = d4[(i >>> 20) & 31]
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 3:
+				d3 = tree
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 2:
+				d2 = tree
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+				break;
+			case 1:
+				d1 = tree
+				d0 = d1[(i >>> 5) & 31]
+				break;
+		}
+
+
+		d5End: while (true) {
+			var d4Stop = ((i >>> 25) << 25) - 1;
+			d4End: while (true) {
+				var d3Stop = ((i >>> 20) << 20) - 1;
+				d3End: while (true) {
+					var d2Stop = ((i >>> 15) << 15) - 1;
+					d2End: while (true) {
+						var d1Stop = ((i >>> 10) << 10) - 1;
+						d1End: while (true) {
+							var d0stop = ((i >>> 5) << 5) - 1;
+
+							while (i !== d0stop) {
+								seed = fn(seed, d0[i & 31], i);
+								if (i == start) break d5End;
+
+								i--
+							}
+							if (i === d1Stop) break d1End;
+							d0 = d1[(i >>> 5) & 31]
+						}
+						if (!d2 || i === d2Stop) break d2End;
+						d1 = d2[(i >>> 10) & 31]
+						d0 = d1[(i >>> 5) & 31]
+					}
+					if (!d3 || i === d3Stop) break d3End;
+					d2 = d3[(i >>> 15) & 31]
+					d1 = d2[(i >>> 10) & 31]
+					d0 = d1[(i >>> 5) & 31]
+				}
+				if (!d4 || i === d4Stop) break d4End;
+				d3 = d4[(i >>> 20) & 31]
+				d2 = d3[(i >>> 15) & 31]
+				d1 = d2[(i >>> 10) & 31]
+				d0 = d1[(i >>> 5) & 31]
+			}
+			if (!d5 || i < 0) break d5End;
+			d4 = d5[(i >>> 25) & 31]
+			d3 = d4[(i >>> 20) & 31]
+			d2 = d3[(i >>> 15) & 31]
+			d1 = d2[(i >>> 10) & 31]
+			d0 = d1[(i >>> 5) & 31]
+		}
+		return seed;
+	},
 	cancelableTreeReduce(fn, seed, tree, depth, i, end) {
 		var d0, d1, d2, d3, d4, d5, j;
 		switch(depth) {
@@ -1064,24 +1159,38 @@ export const Cassowry = {
 		return this.cancelableReduce(fn, seed, list)
 	},
 	reduceRight(fn, seed, list) {
-		throw new Error('operation not supported...yet')
+		var pre = list.pre
+			, len = list.length - (pre && pre.length || 0)
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
+
+		if (tailLen) {
+			var tail = list.aft
+			var i = tail.length;
+			while (i--) {
+				seed = fn(seed, tail[i])
+			}
+		}
+
+		if (treeLen) {
+			seed = this.reverseTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen)
+		}
+
+		if (pre) {
+			var head = this.llToArray(pre);
+			var i = head.length;
+			while (i--) {
+				seed = fn(seed, head[i])
+			}
+		}
+
+		return seed
 	},
 
+	Finder,
 	find(predicate, list) {
-		var lib = {
-				Token: this.CancelToken
-				, predicate
-				, step(_, value, index) {
-					return this.predicate(value) ? new this.Token(value, index) : null
-				}
-			}
 
-		var result = this.cancelableReduce(lib.step.bind(lib), null, list)
-		return this.isCancelled(result) ? result : {
-				index: -1,
-				value: null
-			};
-
+		return this.cancelableReduce(new this.Finder(predicate).toReducer(), null, list)
 	}
 
 

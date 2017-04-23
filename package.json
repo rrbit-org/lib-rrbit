@@ -1,6 +1,6 @@
 {
   "name": "lib-rrbit",
-  "version": "2.0.11-beta",
+  "version": "2.0.12-beta",
   "description": "core operations for use on relaxed radix balanced vectors",
   "main": "lib/rrbit.js",
   "module": "src/index.js",
@@ -48,7 +48,6 @@
     "test:iter": "BABEL_ENV=test ./node_modules/.bin/jest test/iteration.test.js",
     "test:pre": "BABEL_ENV=test ./node_modules/.bin/jest test/prepend.test.js",
     "test:set": "BABEL_ENV=test ./node_modules/.bin/jest test/update.test.js",
-
     "bench:push": "BABEL_ENV=prod node project/bench.js --file=perf/append.perf.js",
     "bench:pre": "BABEL_ENV=prod node project/bench.js --file=perf/prepend.perf.js",
     "bench:iter": "BABEL_ENV=prod node project/bench.js --file=perf/iterator.perf.js",
