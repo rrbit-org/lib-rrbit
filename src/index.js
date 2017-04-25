@@ -16,6 +16,10 @@ function CancelToken(value, index) {
 	this.value = value;
 	this.index = index;
 }
+CancelToken.prototype = Object.create(Error.prototype);
+CancelToken.prototype.constructor = CancelToken;
+CancelToken.prototype.isCancelToken = true; // cheaper instanceof check
+
 
 function Finder(predicate) {
 	this.predicate = predicate;
@@ -60,19 +64,18 @@ export function setup(factory) {
 }
 
 export const Cassowry = {
+	// = config ===========================================================
+
 	OCCULANCE_ENABLE: true,
+
+
+	// = factory ===========================================================
+
 	Vector,
-	CancelToken,
-	isCancelled(value) {
-		return value instanceof this.CancelToken
-	},
-	done(value, index, depth) {
-		return new this.CancelToken(value, index, depth)
-	},
 	factory() {
 		return new this.Vector();
 	},
-	clone(list){
+	clone(list) {
 		var vec = this.factory();
 		vec.length = list.length;
 		vec.root = list.root;
@@ -84,19 +87,46 @@ export const Cassowry = {
 		return vec;
 	},
 
+// enable v8 to optimize by hiding Errors from happy path
+	IllegalRange(msg) {
+		throw new RangeError(msg || 'out of range')
+	},
+
+	// = Cancel token ===========================================================
+
+	CancelToken,
+	isCancelled(value) {
+		return value && value.isCancelToken
+	},
+	done(value, index) {
+		return new this.CancelToken(value, index)
+	},
+	cancel(value, index) {
+		throw new this.CancelToken(value, index);
+	},
+	doCancelable(fn) {
+		// try/catches are a major de-opt. so we extract that out to enable everything
+		// else to optimize and inline as much as possible
+		try {
+			return fn()
+		} catch (e) {
+			if (this.isCancelled(e)) {
+				return e;
+			} else {
+				throw e;
+			}
+		}
+	},
+
+	// = linked list helpers ===========================================================
+
 	// optimize for prepend performance
 	SinglyLinkedList(data, len, next) {
 		this.data = data;
 		this.link = next;
 		this.length = len;
 	},
-// enable v8 to optimize by hiding Errors from happy path
-	IllegalRange(msg) {
-		throw new RangeError(msg || 'out of range')
-	},
 
-
-	// = linked list helpers ===========================================================
 	addLL(value, list) {
 		if (list) {
 			return new this.SinglyLinkedList(value, list.length + 1, list)
@@ -177,51 +207,80 @@ export const Cassowry = {
 	},
 
 	// = tree math helpers =======================================================
-	
-	// round down to divisible of 32
+
+	/**
+	 * code here for education only(don't use), this is faster when inlined
+	 *
+	 * we use this to get to the nearest block of 32. basically equivalent to:
+	 *
+	 * Math.floor( length / 32) * 32
+	 *
+	 * @param {number} length
+	 * @return {number}
+	 */
 	tailOffset(length) {
 		return (length >>> 5) << 5
 	},
-	//round to no greater than 32
+	/**
+	 * code here for education only(don't use), this is faster when inlined
+	 *
+	 * we use this to get the index is the current block. basically equivalent to:
+	 *
+	 * length % 32
+	 *
+	 * @param {number} length
+	 * @return {number}
+	 */
 	tailIndex(index) {
 		return index & 31
 	},
-	
-	depthFromLength: (function() {
-		// faster than doing:
-		// Math.floor(Math.log(len) / Math.log(32))
+	/**
+	 * code here for education only(don't use), this is faster when inlined
+	 *
+	 * we use this to get the index is the current block, for parent nodes. basically equivalent to:
+	 *
+	 * var depth = Math.floor(Math.log(length) / Math.log(32))  //logBase length
+	 * Math.floor( length / Math.pow(32, depth)) * Math.pow(32, depth)
+	 *
+	 * @param {number} length
+	 * @return {number}
+	 */
+	indexInBlockAtDepth(index, depth) {
+		return (index >>> (depth * 5)) & 31
+	},
 
-		// return function(len) {
-		// 	return ((31 - (31 - ((Math.log(len >>> 0) * Math.LOG2E) |0))) / 5) | 0
-		// }
+	// faster than doing:
+	// Math.floor(Math.log(len) / Math.log(32))
 
-		// if (typeof Math.clz32 === 'function' && !isNode) {
-		// 	//for some reason this works terrible in node, but great in browsers
-		// 	return function(len) {
-		// 		return ((31 - Math.clz32(len - 1)) / 5) | 0
-		// 	}
-		// }
-		// return function(len) {
-		// 	len--
-		// 	// 0000000000000000000000000100000 // 32
-		// 	// 0000000000000000000010000000000 // 1024
-		// 	// 0000000000000001000000000000000 // 32768
-		// 	// 0000000000100000000000000000000 // 1048576
-		// 	// 0000010000000000000000000000000 // 33554432
-		// 	// 1000000000000000000000000000000 // 1073741824
-		// 	return 0 + !!(len >>> 30) + !!(len >>> 25) + !!(len >>> 20) + !!(len >>> 15) + !!(len >>> 10) + 1 //!!(len >>> 5)
-		// }
+	// return function(len) {
+	// 	return ((31 - (31 - ((Math.log(len >>> 0) * Math.LOG2E) |0))) / 5) | 0
+	// }
 
-		return function(len) {
-			if (len <= 1024) return 1;
-			if (len <= 32768) return 2;
-			if (len <= 1048576) return 3;
-			if (len <= 33554432) return 4;
-			if (len <= 1073741824) return 5;
-			return 6;
-		}
-	})(),
-	
+	// if (typeof Math.clz32 === 'function' && !isNode) {
+	// 	//for some reason this works terrible in node, but great in browsers
+	// 	return function(len) {
+	// 		return ((31 - Math.clz32(len - 1)) / 5) | 0
+	// 	}
+	// }
+	// return function(len) {
+	// 	len--
+	// 	// 0000000000000000000000000100000 // 32
+	// 	// 0000000000000000000010000000000 // 1024
+	// 	// 0000000000000001000000000000000 // 32768
+	// 	// 0000000000100000000000000000000 // 1048576
+	// 	// 0000010000000000000000000000000 // 33554432
+	// 	// 1000000000000000000000000000000 // 1073741824
+	// 	return 0 + !!(len >>> 30) + !!(len >>> 25) + !!(len >>> 20) + !!(len >>> 15) + !!(len >>> 10) + 1 //!!(len >>> 5)
+	// }
+	depthFromLength: function(len) {
+		if (len <= 1024) return 1;
+		if (len <= 32768) return 2;
+		if (len <= 1048576) return 3;
+		if (len <= 33554432) return 4;
+		if (len <= 1073741824) return 5;
+		return 6;
+	},
+
 	/*
 	 * optimization strategy here is a form of loop unrolling, where instead
 	 * of looping all the way down to child-most node, we use a switch case
@@ -364,7 +423,7 @@ export const Cassowry = {
 
 	},
 
-	prependLeafOntoTree(leaf, tree, treeLen) {
+	prependLeafOntoTree(leaf, list, treeLen) {
 		var d1
 			, d2
 			, d3
@@ -373,42 +432,105 @@ export const Cassowry = {
 			, n2
 			, n3
 			, n4
+			, tree = list.root
+			, offset = list.originOffset;
 
 		if (!tree || treeLen == 0) {
 			return [leaf]
 		}
 
+		// prepending has a few rules we try to follow:
+		// 1) all of originOffset must be contained within the zero-eth top node index
+		//    If the slot becomes fully packed, we know it's safe to unshift over by one and reset the originOffset
+		//    in other words offset cannot be originOffset > (32 ** depth)
+		//    note: drop() also needs to honor this
+		//
+		// 2) if a node is:(not the top node && within the originOffset), it must have a length of 32.
+		//   The first elements will be null, but required for proper indexing
+		//
+		// 3) offset is calculated as an inverted tree from right to left
+		//    so instead of prepending 32 and setting the offset to 32, we would set it to (32 ** depth) - 32
+		//
+		//                   [0][1]
+		//                  /      \
+		//                 /        \
+		// [x][x][29][30][31]       [0][1][2]
+		//        /   /   |         /   |   \
+		//      /    /    |        /    |    \
+		//    /     /     |       /     |     \
+		//  [][][]-[][][]-[][][]-[][][]-[][][]-[][][]
+
 		if (treeLen <= 1024) { // depth 1
-			return tree.length == 32 ? [[leaf], tree] : this.aUnshift(leaf, tree);
+
+			if (list.originOffset) {
+				// hmm, shouldn't have an offset at this level?
+			}
+			if (treeLen == 1024) {
+				list.originOffset = 1024 - 32;
+				return [this.aSetǃ(31, leaf, new Array(32)), tree]
+			}
+			return this.aUnshift(leaf, tree);
 		}
 
 		if (treeLen <= 32768) { // depth 2
-			this.IllegalRange("can't prepend more than 1024...yet :(")
-			// there's probably a bug here. we should rebalance the tree
-			// to ensure all nodes are front packed...or adopt rrb
-			d1 = tree[0]
+			// this.IllegalRange("can't prepend more than 1024...yet :(")
+			if (treeLen == 32768) {// need to shift level up
+				if (offset) {
+					// if we had been only prepending, then offset would be 0 by now
+					// we can only get here if drop'd first, then prepended
+					// but drop is supposed to honor our indexing rules
+					this.IllegalRange('error in drop(), failed to construct index correctly. please file a bug report')
+				}
 
-			n1 = d1.length === 32 ? [leaf] : this.aUnshift(leaf, d1);
-
-			if (d1.length === 32) {
-				return tree.length == 32 ? [[n1], tree] : this.aUnshift(n1, tree);
+				list.originOffset = 32768 - 32;
+				n1 = this.aSetǃ(31, leaf, new Array(32));
+				n2 = this.aSetǃ(31, n1, new Array(32));
+				return [n2, tree]
 			}
-			return this.aSet(0, n1, tree) //update existing slot
+
+			if (!offset) { // tree is fully left indexed, so we need to add a new offset'd node at zero
+				list.originOffset = 1024 - 32;
+				d1 = this.aSetǃ(31, leaf, new Array(32));
+				return this.aUnshift(d1, tree)
+			} else {
+				list.originOffset = offset - 32;
+				d1 = tree[0];
+				n1 = this.aSet(((offset - 32) >> 5) & 31, leaf, d1);
+				n2 = this.aSet(0, n1, tree);
+				return n2;
+			}
 		}
 
 		if (treeLen <= 1048576) { // depth 3
-			d2 = tree[0]
-			d1 = d2[0]
 
-			n1 = d1.length === 32 ? [leaf] : this.aUnshift(leaf, d1);
-			n2 = d1.length !== 32 ? this.aSet(0, n1, d2) : (d2.length === 32 ? [n1] : this.aUnshift(n1, d2));
-			
-			// return this.updateRoot(n2, tree, n2.length === 1 && d2.length == 32)
-			if (n2.length === 1 && d2.length == 32) { // append to end
-				return tree.length == 32 ? [[n2], tree] : this.aUnshift(n2, tree);
+			if (treeLen == 1048576) {// need to shift level up
+				if (offset) {
+					this.IllegalRange('error in drop(), failed to construct index correctly. please file a bug report')
+				}
+
+				list.originOffset = 1048576 - 32;
+				n1 = this.aSetǃ(31, leaf, new Array(32));
+				n2 = this.aSetǃ(31, n1, new Array(32));
+				n3 = this.aSetǃ(31, n2, new Array(32));
+				return [n3, tree]
 			}
-			return this.aSet(0, n2, tree) //update existing slot
+
+			if (!offset) { // tree is fully left indexed, so we need to add a new offset'd node at zero
+				list.originOffset = 32768 - 32;
+				n1 = this.aSetǃ(31, leaf, new Array(32));
+				n2 = this.aSetǃ(31, n1, new Array(32));
+				return this.aUnshift(n2, tree)
+			} else {
+				list.originOffset = offset - 32;
+				d2 = tree[0];
+				d1 = d2[((offset - 32) >> 10)];
+				n1 = this.aSet(((offset - 32) >> 5) & 31, leaf, d1 || new Array(32));
+				n2 = this.aSet(((offset - 32) >> 10) & 31, n1, d2);
+				n3 = this.aSet(0, n2, tree);
+				return n3;
+			}
 		}
+		this.IllegalRange("can't prepend more than 1048576...yet :(");
 	},
 
 	trimTail(root, depth, len) {
@@ -688,24 +810,26 @@ export const Cassowry = {
 	},
 	cancelableReduce(fn, seed, list) {
 		var pre = list.pre
+			, preLen = pre && pre.length || 0
 			, len = list.length - (pre && pre.length || 0)
 			, treeLen = (len >>> 5) << 5
 			, tailLen = len & 31
 
 
+		var pI = 0
 		while (pre && !this.isCancelled(seed)) {
-			seed = fn(seed, pre.data)
+			seed = fn(seed, pre.data, pI++)
 			pre = pre.link
 		}
 
 		if (treeLen && !this.isCancelled(seed)) {
-			seed = this.cancelableTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen)
+			seed = this.cancelableTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen, ap, offset)
 		}
 
 		if (tailLen && !this.isCancelled(seed)) {
 			var tail = list.aft
 			for (var i = 0; tailLen > i && !this.isCancelled(seed); i++) {
-				seed = fn(seed, tail[i])
+				seed = fn(seed, tail[i], preLen + treeLen + i)
 			}
 		}
 
@@ -734,9 +858,6 @@ export const Cassowry = {
 		}
 		return list;
 	},
-
-	
-	
 
 // = main/public operations ====================================================
 
@@ -771,10 +892,8 @@ export const Cassowry = {
 			return list.aft[i & 31];
 
 		if (list.originOffset)
-			i += list.originOffset
+			i += list.originOffset;
 
-		if (treeLen < 32)
-			return tree[i & 31];
 		if (treeLen <= 1024)
 			return tree[(i >> 5) & 31][i & 31];
 		if (treeLen <= 32768)
@@ -804,9 +923,11 @@ export const Cassowry = {
 
 	append(value, list){
 		var vec = this.clone(list)
+			, preLen = vec.pre && vec.pre.length || 0
 			, aft = vec.aft
 			, aftLen = aft && aft.length || 0
 			, totalLength = vec.length
+			, len = totalLength - preLen
 			, newLength = totalLength + 1
 
 		if (this.OCCULANCE_ENABLE) {
@@ -826,7 +947,7 @@ export const Cassowry = {
 		}
 
 		if ((newLength & 31)  === 0) {
-			vec.root = this.appendLeafOntoTree(aft, vec.root, ((newLength - 32) >>> 5) << 5);
+			vec.root = this.appendLeafOntoTree(aft, vec.root, (((newLength - 32) + (list.originOffset || 0)) >>> 5) << 5);
 			vec.aft = null
 		}
 		vec.length = newLength;
@@ -837,6 +958,8 @@ export const Cassowry = {
 	appendǃ(value, vec) {
 		var aft = vec.aft || (vec.aft = [])
 			, totalLength = vec.length
+			, preLen = vec.pre && vec.pre.length || 0
+			, len = totalLength - preLen
 			, newLength = totalLength + 1
 		// 	, preLen = (vec.pre && vec.pre.length) || 0
 		// 	, tailLen = (totalLength - preLen) & 31
@@ -847,7 +970,8 @@ export const Cassowry = {
 		aft.push(value);
 
 		if ((newLength & 31)  === 0) {
-			vec.root = this.appendLeafOntoTreeǃ(aft, vec.root, ((newLength - 32) >>> 5) << 5);
+			var treeLen = ((((len + 1) - 32) + (vec.originOffset || 0)) >>> 5) << 5;
+			vec.root = this.appendLeafOntoTreeǃ(aft, vec.root, treeLen);
 			vec.aft = null
 		}
 		vec.length = newLength;
@@ -869,10 +993,10 @@ export const Cassowry = {
 		var pre = this.addLL(value, vec.pre)
 		
 		if (pre.length == 32) {
-			vec.root = this.prependLeafOntoTree(this.llToArray(pre), vec.root, ((newLength - 32) >>> 5) << 5);
+			vec.root = this.prependLeafOntoTree(this.llToArray(pre), vec, ((newLength - 32) >>> 5) << 5);
 			vec.pre = null
 		} else {
-			vec.pre = pre;
+			vec.pre = pre
 		}
 
 		vec.length = newLength;
@@ -1101,6 +1225,12 @@ export const Cassowry = {
 		switch(depth - newDepth) {
 			//case 5: since we don't have a 0 depth due to tail, this path never occurs
 			case 4:// dropping 4 levels
+				// var unDrop = 0;
+				// unDrop += ((start >> 25) & 31) * 33
+				// unDrop += ((start >> 20) & 31) * 33
+				// unDrop += ((start >> 15) & 31) * 33
+				// unDrop += ((start >> 10) & 31) * 33
+				// unDrop += ((start >> 5) & 31) * 33
 				break
 			case 3:
 				break

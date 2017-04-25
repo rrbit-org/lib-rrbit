@@ -34,8 +34,8 @@ describe('immutable prepend tests', () => {
 
 	testSize(DEPTHS[0]);
 	testSize(DEPTHS[1]);
-	// testSize(DEPTHS[2])
-	// testSize(DEPTHS[3])
+	testSize(DEPTHS[2]);
+	testSize(DEPTHS[3]);
 	// testSize(DEPTHS[4])
 	// testSize(DEPTHS[5])
 });
