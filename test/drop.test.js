@@ -4,11 +4,6 @@ import {range} from './testUtils';
 import expect from 'jest-matchers';
 
 describe('drop tests', () => {
-	var vec_32 = range(32);
-	var vec_64 = range(64);
-	var vec_96 = range(96);
-	var vec_1k = range(1000);
-	var vec_1024 = range(1024);
 
 	function dropSize(amount, src) {
 		it(`can drop ${amount} of ${src.length}`, function() {
@@ -16,16 +11,23 @@ describe('drop tests', () => {
 			var vec = Cassowry.drop(amount, src);
 
 			expect(vec.length).toEqual(newLen);
-			var sum = Cassowry.reduce(
-				(i, value) => {
-					expect(value).toEqual(i + amount);
-					return i + 1;
-				},
-				0,
-				vec
-			);
 
-			expect(sum).toEqual(newLen);
+			var len = vec.length;
+			for (var i = 0; len > i; i++) {
+
+				expect(Cassowry.nth(i, vec)).toEqual(i + amount)
+			}
+
+			// var sum = Cassowry.reduce(
+			// 	(i, value) => {
+			// 		expect(value).toEqual(i + amount);
+			// 		return i + 1;
+			// 	},
+			// 	0,
+			// 	vec
+			// );
+
+			// expect(sum).toEqual(newLen);
 		});
 	}
 
@@ -40,9 +42,11 @@ describe('drop tests', () => {
 		sizes.forEach(size => dropSize(size, src));
 	}
 
-	dropItLikeItsHot(vec_32);
-	dropItLikeItsHot(vec_64);
-	dropItLikeItsHot(vec_96);
-	dropItLikeItsHot(vec_1k);
-	dropItLikeItsHot(vec_1024);
+	dropItLikeItsHot(range(32));
+	dropItLikeItsHot(range(64));
+	dropItLikeItsHot(range(96));
+	dropItLikeItsHot(range(1000));
+	dropItLikeItsHot(range(1024));
+	dropItLikeItsHot(range(32768));
+	// dropItLikeItsHot(range(1048576));
 });

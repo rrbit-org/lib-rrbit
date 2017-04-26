@@ -280,6 +280,14 @@ export const Cassowry = {
 		if (len <= 1073741824) return 5;
 		return 6;
 	},
+	DEPTHS: [
+		32
+		, 1024
+		, 32768
+		, 1048576
+		, 33554432
+		, 1073741824
+	],
 
 	/*
 	 * optimization strategy here is a form of loop unrolling, where instead
@@ -814,6 +822,7 @@ export const Cassowry = {
 			, len = list.length - (pre && pre.length || 0)
 			, treeLen = (len >>> 5) << 5
 			, tailLen = len & 31
+			, origin = list.originOffset || 0
 
 
 		var pI = 0
@@ -823,7 +832,7 @@ export const Cassowry = {
 		}
 
 		if (treeLen && !this.isCancelled(seed)) {
-			seed = this.cancelableTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen, ap, offset)
+			seed = this.cancelableTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), origin, treeLen)
 		}
 
 		if (tailLen && !this.isCancelled(seed)) {
@@ -866,6 +875,7 @@ export const Cassowry = {
 			, pre = list.pre
 			, totalLength = list.length
 			, preLen = ((pre && pre.length) || 0)
+			, origin = list.originOffset || 0
 		;
 
 		if (i < 0) {
@@ -886,13 +896,13 @@ export const Cassowry = {
 		i -= preLen
 
 		var len = totalLength - preLen;
-		var treeLen = ((len ) >>> 5) << 5;
+		var treeLen = ((len + origin) >>> 5) << 5;
 
-		if (len < 32 || i >= treeLen)
+		if (origin)
+			i += origin;
+
+		if (!tree || i >= treeLen)
 			return list.aft[i & 31];
-
-		if (list.originOffset)
-			i += list.originOffset;
 
 		if (treeLen <= 1024)
 			return tree[(i >> 5) & 31][i & 31];
@@ -1161,7 +1171,9 @@ export const Cassowry = {
 			, treeLen = (len >>> 5) << 5
 			, tailLen = len & 31
 			, vec = this.empty()
-			, d0, d1, d2, d3, d4, d5
+			, d1, d2, d3, d4, d5 // node at depth
+			, i1, i2, i3, i4, i5 // index at each depth
+			, t0, t1, t2, t3     // index from top
 
 		if (n < 0) {
 			n += length;
@@ -1173,7 +1185,7 @@ export const Cassowry = {
 
 		vec.length = newLength
 
-		if (preLen > n) { // only need to drop tail
+		if (preLen > n) { // only need to drop pre
 			var _n = preLen - n;
 			while (pre.length != _n) {
 				pre = pre.link
@@ -1191,74 +1203,101 @@ export const Cassowry = {
 
 		// do tree trim
 
-		var newRoot, newPre;
+		var newRoot;
 		var depth = this.depthFromLength(treeLen);
-		var start = n - preLen
+		// /todo: don't forget about existing list.originOffset
+		var originOffset = list.originOffset || 0
+		var start = (n - preLen) - originOffset
 		var newTreeLen = treeLen - (start)
 		var newDepth = this.depthFromLength(newTreeLen);
+
+		// rules:
+		// 1) offset must not extend into root by more than 1 top level element
+		//    always slice the root and readjust the origin if possible
+		//
+		// 2) pre must always be null if originOffset > 0
+		//    for now, other operations (mostly prepend()) depend on this being true. although could change
 
 		switch(depth) {
 			case 5:
 				d5 = list.root
-				d4 = d5[(start >> 25) & 31]
-				d3 = d4[(start >> 20) & 31]
-				d2 = d3[(start >> 15) & 31]
-				d1 = d2[(start >> 10) & 31]
+				d4 = d5[(i5 = (start >> 25) & 31)]
+				d3 = d4[(i4 = (start >> 20) & 31)]
+				d2 = d3[(i3 = (start >> 15) & 31)]
+				d1 = d2[(i2 = (start >> 10) & 31)]
+				t0 = i5
+				t1 = i4
+				t2 = i3
+				t3 = i2
+				break;
 			case 4:
 				d4 = list.root
-				d3 = d4[(start >> 20) & 31]
-				d2 = d3[(start >> 15) & 31]
-				d1 = d2[(start >> 10) & 31]
+				d3 = d4[(i4 = (start >> 20) & 31)]
+				d2 = d3[(i3 = (start >> 15) & 31)]
+				d1 = d2[(i2 = (start >> 10) & 31)]
+				t0 = i4
+				t1 = i3
+				t2 = i2
+				break;
 			case 3:
 				d3 = list.root
-				d2 = d3[(start >> 15) & 31]
-				d1 = d2[(start >> 10) & 31]
+				d2 = d3[(i3 = (start >> 15) & 31)]
+				d1 = d2[(i2 = (start >> 10) & 31)]
+				t0 = i3
+				t1 = i2
+				break;
 			case 2:
-				d3 = list.root
-				d1 = d2[(start >> 10) & 31]
+				d2 = list.root
+				d1 = d2[(i2 = (start >> 10) & 31)]
+				t0 = i2
+				break;
 			case 1:
 				d1 = list.root
+				t0 = 0
 				break;
 		}
-		
+
+		var unDrop = 0;
 		//adjust height
 		switch(depth - newDepth) {
-			//case 5: since we don't have a 0 depth due to tail, this path never occurs
-			case 4:// dropping 4 levels
-				// var unDrop = 0;
-				// unDrop += ((start >> 25) & 31) * 33
-				// unDrop += ((start >> 20) & 31) * 33
-				// unDrop += ((start >> 15) & 31) * 33
-				// unDrop += ((start >> 10) & 31) * 33
-				// unDrop += ((start >> 5) & 31) * 33
-				break
+			case 4:
 			case 3:
-				break
-			case 2:
-				break
-			case 1:
-				break
-			case 0:
+				unDrop += t3 * this.DEPTHS[depth - 4];
 				break;
+			case 2:
+				unDrop += t2 * this.DEPTHS[depth - 3];
+				break;
+			case 1:
+				unDrop += t1 * this.DEPTHS[depth - 2];
+			case 0:
+				unDrop += t0 * this.DEPTHS[depth - 1];
 		}
 
 		switch(newDepth) {
 			case 5:
+				newRoot = i5 ? this.aSlice(i5, d5.length, d5) : d5;
+				break;
 			case 4:
+				newRoot = i4 ? this.aSlice(i4, d4.length, d4) : d4;
+				break;
 			case 3:
+				newRoot = i3 ? this.aSlice(i3, d3.length, d3) : d3;
+				break;
 			case 2:
-				this.IllegalRange('cannot drop when length is more than 1024...yet');
+				newRoot = i2 ? this.aSlice(i2, d2.length, d2) : d2;
 				break;
 			case 1:
+				newRoot = i1 ? this.aSlice(i1, d1.length, d1) : d1;
 				// less than 1024, so logic is simple
-				newPre = this.aSlice(start & 31, 32, d1[(start >> 5) & 31])
-				var x = (((start >> 5) & 31) + 1)
-				d1 = this.aSlice(x, d1.length, d1)
-				newRoot = d1.length ? d1 : null
+				// newPre = this.aSlice(start & 31, 32, d1[(start >> 5) & 31])
+				// var x = (((start >> 5) & 31) + 1)
+				// d1 = this.aSlice(x, d1.length, d1)
+				// newRoot = d1.length ? d1 : null
 				break;
 		}
 
-		vec.pre = this.arrayToLL(newPre);
+		vec.originOffset = start - unDrop;
+		vec.pre = null;
 		vec.root = newRoot;
 		vec.aft = list.aft;
 		return vec;
