@@ -103,3 +103,8 @@ this limitation can be mitigated
 |immutable-js take half                    |  2100578.67 op/s | take/slice |
 |mori take half                            |  2396771.15 op/s | take/slice |
 |rrbit (Cassowry) take                     |  3260573.92 op/s | take/slice |
+|--------------------------------------------------------------------------|
+|native slice 25%                          |   890715.24 op/s | drop/slice |
+|immutable-js drop 25%                     |  1065168.44 op/s | drop/slice |
+|rrbit (Cassowry) drop 25%                 |  1710561.14 op/s | drop/slice |
+|mori drop    25%                          |  1970101.65 op/s | drop/slice |
