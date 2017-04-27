@@ -62,7 +62,7 @@ var list_1k = {
 // console.log(list_1k.mori.prototype)
 // console.log(list_1k.mori.toString.toString())
 
-describe('', function() {
+describe('iterations tests', function() {
 	it('mori for-of speed', function() {
 		for (var value of list_1k.mori) {
 			value + value;
@@ -75,18 +75,6 @@ describe('', function() {
 		}
 	});
 
-	// it('rrbit for-of speed', function() {
-	// 	for (var value of list_1k.rrbit) {
-	// 		value + value;
-	// 	}
-	// })
-	//
-	// it('rrbit reduce speed', function() {
-	// 	var it = iterator(0, list_1k.rrbit.length, list_1k.rrbit);
-	// 	it.reduce(function(acc, value) {
-	// 		value + value;
-	// 	}, null);
-	// });
 	it('rrbit:cassowry reduce speed', function() {
 		Cassowry.reduce(
 			function(acc, value) {
@@ -121,5 +109,25 @@ describe('', function() {
 		_.reduce(list, (_, value) => {
 			value + value;
 		});
+	});
+
+	it('mori find speed', function() {
+		var i = mori.find(list_1k.mori, 500)
+	});
+
+	it('immutable-js indexOf', function() {
+		var i = list_1k.imm.indexOf(500)
+	});
+
+	it('native indexOf', function() {
+		var i = list_1k.native.indexOf(500);
+	});
+
+	it('native find', function() {
+		var i = list_1k.native.find(value => value === 500);
+	});
+
+	it('rrbit find', function() {
+		var i = Cassowry.find(value => value === 500, list_1k.cass)
 	});
 });

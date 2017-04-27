@@ -44,6 +44,30 @@ describe('reduce tests', () => {
 	// testSize(DEPTHS[4])
 });
 
+describe('find tests', () => {
+	function testSize(SIZE) {
+		it('find in range ' + SIZE, () => {
+			var vec = range(SIZE);
+			var mid = (SIZE / 2) | 0;
+			var notExist = {}
+
+			var found = Cassowry.find(value => value === mid, vec);
+			var notFound = Cassowry.find(value => value === notExist, vec);
+
+			expect(found).toHaveProperty('value', mid)
+			expect(found).toHaveProperty('index', mid)
+			expect(notFound).toHaveProperty('index', -1)
+			expect(notFound).toHaveProperty('value', null)
+		});
+	}
+
+	testSize(DEPTHS[0]);
+	testSize(DEPTHS[1]);
+	testSize(DEPTHS[2]);
+	testSize(DEPTHS[3]);
+	// testSize(DEPTHS[4])
+});
+
 describe.skip('forward iteration', function() {
 	function testIterationSize(size) {
 		it(`can iterate in order - ${size}`, function() {
@@ -64,7 +88,7 @@ describe.skip('forward iteration', function() {
 	// testIterationSize(DEPTHS[3]);
 });
 
-describe('reverse reduce', function() {
+describe.skip('reverse reduce', function() {
 	var size = 1028;
 	var vec = range(size);
 

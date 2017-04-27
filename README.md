@@ -108,3 +108,9 @@ this limitation can be mitigated
 |immutable-js drop 25%                     |  1065168.44 op/s | drop/slice |
 |rrbit (Cassowry) drop 25%                 |  1710561.14 op/s | drop/slice |
 |mori drop    25%                          |  1970101.65 op/s | drop/slice |
+|--------------------------------------------------------------------------|
+|immutable-js indexOf                      |    14571.30 op/s | drop/slice |
+|rrbit find                                |    92276.35 op/s | drop/slice |
+|native find                               |   169315.58 op/s | drop/slice |
+|native indexOf                            |  2549531.11 op/s | drop/slice |
+|mori find                                 |  2528503.97 op/s | drop/slice |

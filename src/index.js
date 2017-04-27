@@ -17,21 +17,11 @@ function CancelToken(value, index) {
 	this.index = index;
 }
 CancelToken.prototype = Object.create(Error.prototype);
+CancelToken.prototype.message = "not a real error";
+CancelToken.prototype.name = "CancelToken";
 CancelToken.prototype.constructor = CancelToken;
 CancelToken.prototype.isCancelToken = true; // cheaper instanceof check
 
-
-function Finder(predicate) {
-	this.predicate = predicate;
-}
-Finder.prototype.Found = CancelToken;
-Finder.prototype.NotFound = new CancelToken(null, -1);
-Finder.prototype.step = function(_, value, index) {
-	return this.predicate(value) ? new this.Found(value, index) : this.NotFound
-}
-Finder.prototype.toReducer = function() {
-	return this.step.bind(this)
-}
 
 
 export function setup(factory) {
@@ -95,6 +85,7 @@ export const Cassowry = {
 	// = Cancel token ===========================================================
 
 	CancelToken,
+	NotFound: new CancelToken(null, -1),
 	isCancelled(value) {
 		return value && value.isCancelToken
 	},
@@ -727,7 +718,8 @@ export const Cassowry = {
 		}
 		return seed;
 	},
-	cancelableTreeReduce(fn, seed, tree, depth, i, end) {
+
+	nduceTree(apply, fn, seed, i, end, depth, tree, offset) {
 		var d0, d1, d2, d3, d4, d5, j;
 		if (i == end) return seed;
 
@@ -772,10 +764,9 @@ export const Cassowry = {
 						d1End: while(true) {
 							var end0 = ((i + 32) >>> 5) << 5;
 							while(i < end0) {
-								seed = fn(seed, d0[i & 31], i);
-								if (this.isCancelled(seed)) {
-									break d5End;
-								}
+
+								seed = apply(fn, d0[i & 31], seed, i + offset)
+								
 								i++;
 								if (i == end)
 									break d5End;
@@ -817,7 +808,18 @@ export const Cassowry = {
 		}
 		return seed;
 	},
-	cancelableReduce(fn, seed, list) {
+
+	/**
+	 * an extra flexible reduce method
+	 *
+	 * @param {function(function, T, W, number)} apply
+	 * @param {function} fn
+	 * @param {W} seed
+	 * @param {Vector<T>} list
+	 * @param {number} offset
+	 * @return {*}
+	 */
+	nduce(apply, fn, seed, list, offset) {
 		var pre = list.pre
 			, preLen = pre && pre.length || 0
 			, len = list.length - (pre && pre.length || 0)
@@ -826,24 +828,44 @@ export const Cassowry = {
 			, tailLen = (len + origin) & 31
 
 
-		var pI = 0
-		while (pre && !this.isCancelled(seed)) {
-			seed = fn(seed, pre.data, pI++)
+		var pI = 0;
+		while (pre) {
+			seed = apply(fn, pre.data, seed, pI + offset);
+			pI++;
 			pre = pre.link
 		}
 
-		if (treeLen && !this.isCancelled(seed)) {
-			seed = this.cancelableTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), origin, treeLen)
+		if (treeLen) {
+			seed = this.nduceTree(apply, fn, seed, origin, treeLen, this.depthFromLength(treeLen), list.root, preLen + offset);
 		}
 
-		if (tailLen && !this.isCancelled(seed)) {
+		if (tailLen) {
 			var tail = list.aft
-			for (var i = 0; tailLen > i && !this.isCancelled(seed); i++) {
-				seed = fn(seed, tail[i], preLen + treeLen + i)
+			var _offset = preLen + treeLen + offset;
+			for (var i = 0; tailLen > i; i++) {
+				seed = apply(fn, tail[i], seed, _offset + i)
 			}
 		}
 
-		return seed
+		return seed;
+	},
+	_reduceApply(fn, value, acc, index) {
+		return fn(acc, value);
+	},
+	_foldlApply(fn, value, acc, index) {
+		return fn(value, acc);
+	},
+	_mapApply(fn, value, acc, index) {
+		return this.appendǃ(fn(value), acc);
+	},
+	_indexedMapApply(fn, value, acc, index) {
+		return this.appendǃ(fn(value, index), acc);
+	},
+	_filterApply(fn, value, list, index) {
+		return fn(value) ? this.appendǃ(value, list) : list;
+	},
+	_findApply(fn, value, acc, index) {
+		return fn(value) ? this.cancel(value, index) : acc;
 	},
 
 
@@ -1325,8 +1347,16 @@ export const Cassowry = {
 	},
 
 	reduce(fn, seed, list) {
-		// todo: do we need to unwrap CancelToken here?
-		return this.cancelableReduce(fn, seed, list)
+		return this.nduce(this._reduceApply.bind(this), fn, seed, list, 0)
+	},
+	foldl(fn, seed, list) {
+		return this.nduce(this._foldlApply.bind(this), fn, seed, list, 0)
+	},
+	map(fn, list) {
+		return this.nduce(this._mapApply.bind(this), fn, this.empty(), list, 0)
+	},
+	filter(predicate, list) {
+		return this.nduce(this._filterApply.bind(this), predicate, this.empty(), list, 0)
 	},
 	reduceRight(fn, seed, list) {
 		var pre = list.pre
@@ -1356,11 +1386,10 @@ export const Cassowry = {
 
 		return seed
 	},
-
-	Finder,
 	find(predicate, list) {
-
-		return this.cancelableReduce(new this.Finder(predicate).toReducer(), null, list)
+		return this.doCancelable((function() {
+			return this.nduce(this._findApply.bind(this), predicate, this.NotFound, list, 0)
+		}).bind(this));
 	}
 
 
