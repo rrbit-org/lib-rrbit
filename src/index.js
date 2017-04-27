@@ -102,13 +102,13 @@ export const Cassowry = {
 		return new this.CancelToken(value, index)
 	},
 	cancel(value, index) {
-		throw new this.CancelToken(value, index);
+		throw new CancelToken(value, index);
 	},
 	doCancelable(fn) {
 		// try/catches are a major de-opt. so we extract that out to enable everything
 		// else to optimize and inline as much as possible
 		try {
-			return fn()
+			return fn(this.cancel)
 		} catch (e) {
 			if (this.isCancelled(e)) {
 				return e;
@@ -729,6 +729,8 @@ export const Cassowry = {
 	},
 	cancelableTreeReduce(fn, seed, tree, depth, i, end) {
 		var d0, d1, d2, d3, d4, d5, j;
+		if (i == end) return seed;
+
 		switch(depth) {
 			case 5:
 				d5 = tree
@@ -768,16 +770,15 @@ export const Cassowry = {
 				d3End: while(true) {
 					d2End: while(true) {
 						d1End: while(true) {
-							var end0 = i + 32; //it pays only having full blocks in the tree
+							var end0 = ((i + 32) >>> 5) << 5;
 							while(i < end0) {
-								if (i == end)
-									break d5End;
-
 								seed = fn(seed, d0[i & 31], i);
 								if (this.isCancelled(seed)) {
 									break d5End;
 								}
 								i++;
+								if (i == end)
+									break d5End;
 							}
 							if (!(j = (i >>> 5) & 31)) { //if j == 0
 								break d1End;
@@ -797,7 +798,7 @@ export const Cassowry = {
 					d1 = d2[(i >>> 10) & 31]
 					d0 = d1[(i >>> 5) & 31]
 				}
-				if (!d4 || ( (i >>> 20) & 31) == 0) {
+				if (!d4 || ((i >>> 20) & 31) == 0) {
 					break d4End;
 				}
 				d3 = d4[(i >>> 20) & 31]
@@ -820,9 +821,9 @@ export const Cassowry = {
 		var pre = list.pre
 			, preLen = pre && pre.length || 0
 			, len = list.length - (pre && pre.length || 0)
-			, treeLen = (len >>> 5) << 5
-			, tailLen = len & 31
 			, origin = list.originOffset || 0
+			, treeLen = ((len + origin) >>> 5) << 5
+			, tailLen = (len + origin) & 31
 
 
 		var pI = 0

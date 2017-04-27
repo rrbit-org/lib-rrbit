@@ -18,16 +18,12 @@ describe('drop tests', () => {
 				expect(Cassowry.nth(i, vec)).toEqual(i + amount)
 			}
 
-			// var sum = Cassowry.reduce(
-			// 	(i, value) => {
-			// 		expect(value).toEqual(i + amount);
-			// 		return i + 1;
-			// 	},
-			// 	0,
-			// 	vec
-			// );
+			var sum = Cassowry.reduce((i, value) => {
+				expect(value).toEqual(i + amount);
+				return i + 1;
+			}, 0, vec);
 
-			// expect(sum).toEqual(newLen);
+			expect(sum).toEqual(newLen);
 		});
 	}
 
