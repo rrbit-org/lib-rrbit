@@ -86,27 +86,9 @@ export const Cassowry = {
 
 	CancelToken,
 	NotFound: new CancelToken(null, -1),
-	isCancelled(value) {
-		return value && value.isCancelToken
-	},
-	done(value, index) {
-		return new this.CancelToken(value, index)
-	},
+
 	cancel(value, index) {
 		throw new CancelToken(value, index);
-	},
-	doCancelable(fn) {
-		// try/catches are a major de-opt. so we extract that out to enable everything
-		// else to optimize and inline as much as possible
-		try {
-			return fn(this.cancel)
-		} catch (e) {
-			if (this.isCancelled(e)) {
-				return e;
-			} else {
-				throw e;
-			}
-		}
 	},
 
 	// = linked list helpers ===========================================================
@@ -765,7 +747,7 @@ export const Cassowry = {
 							var end0 = ((i + 32) >>> 5) << 5;
 							while(i < end0) {
 
-								seed = apply(fn, d0[i & 31], seed, i + offset)
+								seed = apply.call(this, fn, d0[i & 31], seed, i + offset)
 								
 								i++;
 								if (i == end)
@@ -954,33 +936,34 @@ export const Cassowry = {
 		return vec;
 	},
 
-	append(value, list){
+	append(value, list) {
 		var vec = this.clone(list)
 			, preLen = vec.pre && vec.pre.length || 0
 			, aft = vec.aft
 			, aftLen = aft && aft.length || 0
 			, totalLength = vec.length
-			, len = totalLength - preLen
 			, newLength = totalLength + 1
+			, origin = list.originOffset || 0
+			, len = (totalLength - preLen)
+			, treeLen = ((len + origin) >>> 5) << 5
+			, tailLen = (len + origin) & 31
 
 		if (this.OCCULANCE_ENABLE) {
-			// shared past the offset length
-			var aftDelta = vec.length & 31; //vec.length - 1 ???
-			// another vector is sharing and invisibly mutated our aft
-			if (aftDelta != aftLen) {
-				aft = vec.aft = this.aSlice(0, aftDelta, aft)
-			}
-
 			if (!aft) {
 				aft = vec.aft = []
+			}
+
+			// another vector is sharing and invisibly mutated our aft
+			if (tailLen != aftLen) {
+				aft = vec.aft = this.aSlice(0, tailLen, aft)
 			}
 			aft.push(value);
 		} else {
 			vec.aft = this.aPush(value, aft || [])
 		}
 
-		if ((newLength & 31)  === 0) {
-			vec.root = this.appendLeafOntoTree(aft, vec.root, (((newLength - 32) + (list.originOffset || 0)) >>> 5) << 5);
+		if (tailLen + 1 === 32) {
+			vec.root = this.appendLeafOntoTree(aft, vec.root, treeLen);
 			vec.aft = null
 		}
 		vec.length = newLength;
@@ -994,15 +977,13 @@ export const Cassowry = {
 			, preLen = vec.pre && vec.pre.length || 0
 			, len = totalLength - preLen
 			, newLength = totalLength + 1
-		// 	, preLen = (vec.pre && vec.pre.length) || 0
-		// 	, tailLen = (totalLength - preLen) & 31
-		// if (aft.length !== tailLen) {
-		// 	wtf?
-		// }
+			, origin = vec.originOffset || 0 //really, we should even support this scenario
+			// , newTreeLen = ((newLength + origin) >>> 5) << 5
+			, tailLen = (len + origin) & 31
 		
 		aft.push(value);
 
-		if ((newLength & 31)  === 0) {
+		if (tailLen + 1 === 32) {
 			var treeLen = ((((len + 1) - 32) + (vec.originOffset || 0)) >>> 5) << 5;
 			vec.root = this.appendLeafOntoTreeǃ(aft, vec.root, treeLen);
 			vec.aft = null
@@ -1347,16 +1328,16 @@ export const Cassowry = {
 	},
 
 	reduce(fn, seed, list) {
-		return this.nduce(this._reduceApply.bind(this), fn, seed, list, 0)
+		return this.nduce(this._reduceApply, fn, seed, list, 0)
 	},
 	foldl(fn, seed, list) {
-		return this.nduce(this._foldlApply.bind(this), fn, seed, list, 0)
+		return this.nduce(this._foldlApply, fn, seed, list, 0)
 	},
 	map(fn, list) {
-		return this.nduce(this._mapApply.bind(this), fn, this.empty(), list, 0)
+		return this.nduce(this._mapApply, fn, this.empty(), list, 0)
 	},
 	filter(predicate, list) {
-		return this.nduce(this._filterApply.bind(this), predicate, this.empty(), list, 0)
+		return this.nduce(this._filterApply, predicate, this.empty(), list, 0)
 	},
 	reduceRight(fn, seed, list) {
 		var pre = list.pre
@@ -1387,9 +1368,15 @@ export const Cassowry = {
 		return seed
 	},
 	find(predicate, list) {
-		return this.doCancelable((function() {
-			return this.nduce(this._findApply.bind(this), predicate, this.NotFound, list, 0)
-		}).bind(this));
+		try {
+			return this.nduce(this._findApply, predicate, this.NotFound, list, 0)
+		} catch (e) {
+			if (e.isCancelToken) {
+				return e;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 

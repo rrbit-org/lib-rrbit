@@ -42,6 +42,24 @@ describe('reduce tests', () => {
 	testSize(DEPTHS[2]);
 	testSize(DEPTHS[3]);
 	// testSize(DEPTHS[4])
+
+	it('can reduce over irregularly packed lists', () => {
+		var vec = Cassowry.empty();
+		vec = Cassowry.prepend(2, vec)
+		vec = Cassowry.prepend(1, vec)
+		vec = Cassowry.prepend(0, vec)
+
+		for (var i = 3; 500 > i; i++) {
+			vec = Cassowry.append(i, vec);
+		}
+
+		var sum = Cassowry.reduce((sum, value) => {
+			expect(sum).toEqual(value);
+			return sum + 1;
+		}, 0, vec);
+
+		expect(sum).toEqual(vec.length, 'sum was not as expected');
+	})
 });
 
 describe('find tests', () => {

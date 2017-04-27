@@ -63,6 +63,7 @@ var list_1k = {
 // console.log(list_1k.mori.toString.toString())
 
 describe('iterations tests', function() {
+	//*
 	it('mori for-of speed', function() {
 		for (var value of list_1k.mori) {
 			value + value;
@@ -111,6 +112,9 @@ describe('iterations tests', function() {
 		});
 	});
 
+	/*/
+	 // find/indexOf tests
+
 	it('mori find speed', function() {
 		var i = mori.find(list_1k.mori, 500)
 	});
@@ -130,4 +134,5 @@ describe('iterations tests', function() {
 	it('rrbit find', function() {
 		var i = Cassowry.find(value => value === 500, list_1k.cass)
 	});
+	 //*/
 });
