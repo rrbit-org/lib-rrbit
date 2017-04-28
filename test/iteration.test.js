@@ -106,7 +106,7 @@ describe.skip('forward iteration', function() {
 	// testIterationSize(DEPTHS[3]);
 });
 
-describe.skip('reverse reduce', function() {
+describe('reverse reduce', function() {
 	var size = 1028;
 	var vec = range(size);
 

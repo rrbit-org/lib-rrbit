@@ -108,7 +108,7 @@ export const Cassowry = {
 	},
 	llToArray(ll) {
 	 	if (!ll) return new Array(0);
-	 	
+
 	 	var result = new Array(ll.length);
 	 	var i = 0;
 	 	while(ll) {
@@ -285,7 +285,7 @@ export const Cassowry = {
 		}
 
 		if (i < 1024) { // Math.pow(32, 2)
-			
+
 			return this.aSetAsLast((i >>> 5) & 31, leaf, tree)
 		}
 
@@ -365,7 +365,7 @@ export const Cassowry = {
 			d1[(i >>> 5) & 31] = leaf
 			return tree;
 		}
-		
+
 		if (i < 1048576) { // depth 3
 			if (i == 32768) {
 				tree = [tree]
@@ -376,7 +376,7 @@ export const Cassowry = {
 			d1[(i >>> 5) & 31] = leaf
 			return tree;
 		}
-		
+
 		if (i < 33554432) { // depth 4
 			if (i == 1048576) {
 				tree = [tree]
@@ -388,7 +388,7 @@ export const Cassowry = {
 			d1[(i >>> 5) & 31] = leaf
 			return tree;
 		}
-		
+
 		if (i < 1073741824) { // depth 5
 			if (i == 33554432) {
 				tree = [tree]
@@ -618,7 +618,35 @@ export const Cassowry = {
 		}
 	},
 
-	reverseTreeReduce(fn, seed, tree, depth, start, i) {
+	reverseNduce(apply, fn, seed, list) {
+		var pre = list.pre
+			, len = list.length - (pre && pre.length || 0)
+			, treeLen = (len >>> 5) << 5
+			, tailLen = len & 31
+
+		if (tailLen) {
+			var tail = list.aft
+			var i = tail.length;
+			while (i--) {
+				seed = apply(fn, tail[i], seed)
+			}
+		}
+
+		if (treeLen) {
+			seed = this.reverseTreeReduce(apply, fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen)
+		}
+
+		if (pre) {
+			var head = this.llToArray(pre);
+			var i = head.length;
+			while (i--) {
+				seed = apply(fn, head[i], seed)
+			}
+		}
+
+		return seed
+	},
+	reverseTreeReduce(apply, fn, seed, tree, depth, start, i) {
 		var d0, d1, d2, d3, d4, d5, j;
 
 		i--
@@ -668,7 +696,9 @@ export const Cassowry = {
 							var d0stop = ((i >>> 5) << 5) - 1;
 
 							while (i !== d0stop) {
-								seed = fn(seed, d0[i & 31], i);
+
+								seed = apply(fn, d0[i & 31], seed);
+
 								if (i == start) break d5End;
 
 								i--
@@ -748,7 +778,7 @@ export const Cassowry = {
 							while(i < end0) {
 
 								seed = apply.call(this, fn, d0[i & 31], seed, i + offset)
-								
+
 								i++;
 								if (i == end)
 									break d5End;
@@ -812,7 +842,7 @@ export const Cassowry = {
 
 		var pI = 0;
 		while (pre) {
-			seed = apply(fn, pre.data, seed, pI + offset);
+			seed = apply.call(this, fn, pre.data, seed, pI + offset);
 			pI++;
 			pre = pre.link
 		}
@@ -825,7 +855,7 @@ export const Cassowry = {
 			var tail = list.aft
 			var _offset = preLen + treeLen + offset;
 			for (var i = 0; tailLen > i; i++) {
-				seed = apply(fn, tail[i], seed, _offset + i)
+				seed = apply.call(this, fn, tail[i], seed, _offset + i)
 			}
 		}
 
@@ -922,11 +952,11 @@ export const Cassowry = {
 
 		return this.IllegalRange('range cannot be higher than 1,073,741,824')
 	},
-	
+
 	empty() {
 		return this.factory();
 	},
-	
+
 	of(...values) {
 		if (values.length > 32) {
 			//blow up or something
@@ -980,7 +1010,7 @@ export const Cassowry = {
 			, origin = vec.originOffset || 0 //really, we should even support this scenario
 			// , newTreeLen = ((newLength + origin) >>> 5) << 5
 			, tailLen = (len + origin) & 31
-		
+
 		aft.push(value);
 
 		if (tailLen + 1 === 32) {
@@ -992,7 +1022,7 @@ export const Cassowry = {
 
 		return vec;
 	},
-	
+
 	prepend(value, list) {
 		//TODO: there a bug here when above 1024
 		// we cant just prepend a leaf to the front without either:
@@ -1005,7 +1035,7 @@ export const Cassowry = {
 
 
 		var pre = this.addLL(value, vec.pre)
-		
+
 		if (pre.length == 32) {
 			vec.root = this.prependLeafOntoTree(this.llToArray(pre), vec, ((newLength - 32) >>> 5) << 5);
 			vec.pre = null
@@ -1017,7 +1047,7 @@ export const Cassowry = {
 
 		return vec;
 	},
-	
+
 	update(i, value, list) {
 		var length = list.length
 			, pre = list.pre
@@ -1340,32 +1370,10 @@ export const Cassowry = {
 		return this.nduce(this._filterApply, predicate, this.empty(), list, 0)
 	},
 	reduceRight(fn, seed, list) {
-		var pre = list.pre
-			, len = list.length - (pre && pre.length || 0)
-			, treeLen = (len >>> 5) << 5
-			, tailLen = len & 31
-
-		if (tailLen) {
-			var tail = list.aft
-			var i = tail.length;
-			while (i--) {
-				seed = fn(seed, tail[i])
-			}
-		}
-
-		if (treeLen) {
-			seed = this.reverseTreeReduce(fn, seed, list.root, this.depthFromLength(treeLen), 0, treeLen)
-		}
-
-		if (pre) {
-			var head = this.llToArray(pre);
-			var i = head.length;
-			while (i--) {
-				seed = fn(seed, head[i])
-			}
-		}
-
-		return seed
+		return this.reverseNduce(this._reduceApply, fn, seed, list)
+	},
+	foldr(fn, seed, list) {
+		return this.reverseNduce(this._foldlApply, fn, seed, list)
 	},
 	find(predicate, list) {
 		try {
