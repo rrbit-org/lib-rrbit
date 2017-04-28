@@ -1024,11 +1024,6 @@ export const Cassowry = {
   },
 
   prepend(value, list) {
-    //TODO: there a bug here when above 1024
-    // we cant just prepend a leaf to the front without either:
-    // * rebalancing the tree above depth 2(easiest to implement)
-    // * adopting and rrb style index cache on the node(most flexible)
-    // * adopting an entire tree index offset (likely cheapest)
     var vec = this.clone(list)
       , totalLength = vec.length
       , newLength = totalLength + 1
@@ -1052,10 +1047,11 @@ export const Cassowry = {
     var length = list.length
       , pre = list.pre
       , preLen = pre && pre.length || 0
+      , origin = list.originOffset || 0
       , len = length - preLen
-      , treeLen = (len >>> 5) << 5
-      , tailLen = len & 31
-      , n = i - preLen
+      , treeLen = ((len + origin) >>> 5) << 5
+      , tailLen = (len + origin) & 31
+      , n = (i - preLen) + origin
 
     if (!length)
       return list;
